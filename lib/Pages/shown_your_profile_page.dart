@@ -1,13 +1,93 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class ShownProfilePage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+
+import 'Model/shown_profile_model.dart';
+
+class ShownProfilePage extends StatefulWidget {
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(useMaterial3: true),
+    );
+  }
+
+  ShownProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<ShownProfilePage> createState() => _ShownProfilePageState();
+}
+
+class _ShownProfilePageState extends State<ShownProfilePage> {
+  File? _image;
+
+  List<Map<String, dynamic>> package = [
+    {
+      'name': 'Photo',
+      'time': '60 secondminute',
+      'price': 90,
+    },
+    {
+      'name': 'Photo',
+      'time': '90 secondminute',
+      'price': 110,
+    },
+    {
+      'name': 'Photo',
+      'time': '120 secondminute',
+      'price': 120,
+    },
+    {
+      'name': 'Photo',
+      'time': '150 secondminute',
+      'price': 140,
+    },
+    {
+      'name': 'Photo',
+      'time': '180 secondminute',
+      'price': 160,
+    },
+  ];
+
+  final _formKey = GlobalKey<FormState>();
+  String _igusername = '';
+  String _phrase = '';
+  String _package = '';
+
+  Future getImage(ImageSource source) async {
+    try {
+      final image = await ImagePicker().pickImage(source: source);
+      if (image == null) return;
+
+      // final imageTemporary = File(image.path);
+      final imagePermanent = await saveFilePeramanetly(image.path);
+      setState(() {
+        this._image = imagePermanent;
+      });
+    } on PlatformException catch (e) {
+      print('Failed to pick image: $e');
+    }
+  }
+
+  Future<File> saveFilePeramanetly(String imagePath) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final name = basename(imagePath);
+    final image = File('${directory.path}/$name');
+
+    return File(imagePath).copy(image.path);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-        title: Text('แจก IG คนเหงาๆ'),
+        title: Text('แจก IG คนเหงา'),
         actions: [
           IconButton(
             onPressed: () {
@@ -20,23 +100,322 @@ class ShownProfilePage extends StatelessWidget {
             },
             icon: Icon(Icons.add_alert),
           ),
-          IconButton(
-            onPressed: () {
-              //Move between page
-              Navigator.pushNamed(context, '');
-            },
-            icon: Icon(Icons.navigate_next),
-          ),
         ],
       ),
-      body: Center(
-        child: Text(
-          'Blank Page',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onBackground,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children: [
+                Text(
+                  'รบกวนกรอกข้อมูลให้ครบถ้วน',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _igusername = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'IG Username',
+                            labelStyle: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your message';
+                            }
+
+                            return null;
+                          },
+                          onSaved: (newValue) {
+                            _igusername = newValue!;
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _phrase = value;
+                            });
+                          },
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(50)
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'Your Phrase',
+                            labelStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimary),
+                            counterText: '${_phrase.length.toString()}/50',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your message';
+                            }
+                            if (value.length > 50) {
+                              return 'Long message';
+                            }
+
+                            return null;
+                          },
+                          onSaved: (newValue) {
+                            _phrase = newValue!;
+                          },
+                        ),
+                      ),
+                      DropdownButtonFormField<Map<String, dynamic>>(
+                        value: package[0],
+                        decoration: InputDecoration(
+                          labelText: 'Package',
+                          labelStyle: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(
+                            () {
+                              _package = value as String;
+                            },
+                          );
+                        },
+                        items: package
+                            .map(
+                              (value) => DropdownMenuItem<Map<String, dynamic>>(
+                                value: value,
+                                child: Row(
+                                  children: [
+                                    Text(value['name']),
+                                    SizedBox(width: 10),
+                                    Text(value['time']),
+                                    SizedBox(width: 10),
+                                    Text('THB ' + value['price'].toString()),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'กรุณาเลือก Package';
+                          }
+                        },
+                        // onSaved: (newValue) {
+                        //   _package = newValue! as String;
+                        // },
+                      ),
+                    ],
+                  ),
+                ),
+                // DropdownButton widget
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  'กรุณาเลือกรูปภาพ',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+                _image != null
+                    ? Image.file(
+                        _image!,
+                        width: 400,
+                        height: 400,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset('images/logo.png'),
+                SizedBox(
+                  height: 30,
+                ),
+                CustomButtom(
+                  title: 'Pick from Gallery',
+                  icon: Icons.image_outlined,
+                  onClick: () => getImage(ImageSource.gallery),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+
+                      // final ShownProfileController controller =
+                      //     Get.put(ShownProfileController());
+
+                      // controller.formData.igusername = _igusername;
+                      // controller.formData.phrase = _phrase;
+                      // // controller.formData.package = _package;
+                      // controller.formData.image = _image;
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShownProfileRequestPage(
+                            detail: ShownProfileDetail(
+                              igusername: _igusername,
+                              phrase: _phrase,
+                              package: _package,
+                              image: _image,
+                            ),
+                          ),
+                        ),
+                      );
+                      // controller.onSubmit();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).colorScheme.inversePrimary,
+                    // primary: Colors.blue,
+                    // onPrimary: Colors.white,
+                    padding: EdgeInsets.fromLTRB(120, 10, 120, 10),
+                    textStyle: TextStyle(
+                        fontSize: 25, // Text size
+                        fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(8), // Button border radius
+                    ),
+                  ),
+                  child: Text(
+                    'Confirm',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+Widget CustomButtom({
+  required String title,
+  required IconData icon,
+  required VoidCallback onClick,
+}) {
+  return Container(
+    width: 280,
+    child: ElevatedButton(
+      onPressed: onClick,
+      child: Row(
+        children: [
+          Icon(icon),
+          SizedBox(
+            width: 20,
+          ),
+          Text(title),
+        ],
+      ),
+    ),
+  );
+}
+
+class ShownProfileRequestPage extends StatelessWidget {
+  final ShownProfileDetail detail;
+
+  const ShownProfileRequestPage({super.key, required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        title: Text('Show IG Request'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Summit Information',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+            Text(
+              detail.igusername,
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+            Text(
+              detail.phrase,
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+            // Text(
+            //   detail.package,
+            //   style: TextStyle(
+            //     fontSize: 20,
+            //     color: Theme.of(context).colorScheme.onBackground,
+            //   ),
+            // ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ShownProfileDetail {
+  final String igusername;
+  final String phrase;
+  final String package;
+
+  ShownProfileDetail({
+    required this.igusername,
+    required this.phrase,
+    required this.package,
+    required File? image,
+  });
 }

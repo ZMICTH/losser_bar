@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
   final myitemshows = [
-    Image.asset('images/stir_fried_basil.jpg'),
-    Image.asset('images/enkai.jpg'),
+    Image.asset('images/hennessy_vs.jpg'),
+    Image.asset('images/jameson.jpg'),
   ];
   int myCurrentIndex = 0;
 
@@ -13,19 +13,19 @@ class Homepage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: Text('Losser Bar  '),
-        foregroundColor: Theme.of(context).colorScheme.background,
+        title: const Text('Losser Bar  '),
+        foregroundColor: Theme.of(context).colorScheme.surface,
         titleTextStyle: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.background),
+            color: Theme.of(context).colorScheme.surface),
         actions: [
           IconButton(
             onPressed: () {
               //Move between page
               Navigator.pushNamed(context, '/profile');
             },
-            icon: Icon(Icons.account_circle_sharp),
+            icon: const Icon(Icons.account_circle_sharp),
             iconSize: 40,
           ),
         ],
@@ -40,7 +40,7 @@ class Homepage extends StatelessWidget {
               // enlargeCenterPage: true,
               // aspectRatio: 16 / 9,
               autoPlayCurve: Curves.fastOutSlowIn,
-              autoPlayAnimationDuration: Duration(milliseconds: 600),
+              autoPlayAnimationDuration: const Duration(milliseconds: 600),
             ),
           ),
           Expanded(
@@ -61,11 +61,15 @@ class Homepage extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(
+                          Icons.table_restaurant,
+                          size: 40,
+                        ),
                         Text(
-                          ("สำรองโต๊ะ"),
+                          ("Reserve Table"),
                         ),
                       ],
                     ),
@@ -80,11 +84,15 @@ class Homepage extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(
+                          Icons.movie,
+                          size: 40,
+                        ),
                         Text(
-                          ("จองบัตรคอนเสิร์ต"),
+                          ("Reserve Ticket"),
                         ),
                       ],
                     ),
@@ -99,7 +107,7 @@ class Homepage extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
@@ -107,7 +115,7 @@ class Homepage extends StatelessWidget {
                           size: 40,
                         ),
                         Text(
-                          ("สั่งอาหารและเครื่องดื่ม"),
+                          ("Food and Beverage"),
                         ),
                       ],
                     ),
@@ -115,14 +123,14 @@ class Homepage extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, '/5');
+                    Navigator.pushNamed(context, '/4');
                   },
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
@@ -138,6 +146,29 @@ class Homepage extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
+                    Navigator.pushNamed(context, '/5');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(20.0)),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.account_box_rounded,
+                          size: 40,
+                        ),
+                        Text(
+                          ("Your IG"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
                     Navigator.pushNamed(context, '/6');
                   },
                   child: Container(
@@ -145,11 +176,15 @@ class Homepage extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(
+                          Icons.money_rounded,
+                          size: 40,
+                        ),
                         Text(
-                          ("แจก IG"),
+                          ("Donation"),
                         ),
                       ],
                     ),
@@ -164,30 +199,15 @@ class Homepage extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          ("ให้ทิปพนักงาน"),
+                        Icon(
+                          Icons.cleaning_services,
+                          size: 40,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/8');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
                         Text(
-                          ("น้องเมดคาเฟ่"),
+                          ("Mate Cafe"),
                         ),
                       ],
                     ),

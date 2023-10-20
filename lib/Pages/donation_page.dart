@@ -20,13 +20,13 @@ class DonationPage extends StatelessWidget {
             },
             icon: Icon(Icons.add_alert),
           ),
-          IconButton(
-            onPressed: () {
-              //Move between page
-              Navigator.pushNamed(context, '');
-            },
-            icon: Icon(Icons.navigate_next),
-          ),
+          // IconButton(
+          //   onPressed: () {
+          //     //Move between page
+          //     Navigator.pushNamed(context, '');
+          //   },
+          //   icon: Icon(Icons.navigate_next),
+          // ),
         ],
       ),
       body: Center(

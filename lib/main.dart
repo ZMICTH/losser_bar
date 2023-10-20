@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:losser_bar/Pages/Cart.dart';
-import 'package:losser_bar/Pages/Dek_en.dart';
+import 'package:losser_bar/Pages/cart_page.dart';
+import 'package:losser_bar/Pages/matecafe_page.dart';
 import 'package:losser_bar/Pages/Profile.dart';
 import 'package:losser_bar/Pages/home_page.dart';
 import 'package:losser_bar/Pages/login.dart';
 import 'package:provider/provider.dart';
 import 'Pages/donation_page.dart';
-import 'Pages/food_menu.dart';
-import 'Pages/invited_join_table_page.dart';
+import 'Pages/product_model_page.dart';
 import 'Pages/order_food_page.dart';
 import 'Pages/request_song_page.dart';
 import 'Pages/reserve_table_page.dart';
@@ -18,7 +17,7 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
-        create: (context) => DetailproductModel(),
+        create: (context) => ProductModel(),
       )
     ],
     child: const MyApp(),
@@ -39,21 +38,21 @@ class MyApp extends StatelessWidget {
               primary: Colors.blueGrey[700]!,
               onPrimary: Colors.blueGrey[900]!,
               secondary: Color(0xFF0077ED),
-              onSecondary: Color.fromARGB(255, 126, 125, 125),
+              onSecondary: Colors.teal[800]!,
               error: Color(0xFFF32424),
               onError: Color.fromARGB(255, 231, 100, 13),
               background: Color.fromARGB(255, 255, 255, 255),
               onBackground: Color(0xFF000000),
               surface: Color(0xFFFFFFFF),
               onSurface: Colors.grey[300]!),
-          textTheme: const TextTheme(
+          textTheme: TextTheme(
               bodyMedium: TextStyle(
                   color: Color(0xFFFFFFFF),
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold),
               bodySmall: TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.normal)),
           useMaterial3: true),
 
@@ -66,12 +65,12 @@ class MyApp extends StatelessWidget {
         '/1': (context) => ReserveTablePage(),
         '/2': (context) => ReserveTicketPage(),
         '/3': (context) => OrderFoodPage(),
-        '/4': (context) => InvitedJoinTablePage(),
-        '/5': (context) => RequestSongPage(),
-        '/6': (context) => ShownProfilePage(),
-        '/7': (context) => DonationPage(),
-        '/8': (context) => DekenPage(),
+        '/4': (context) => RequestSongPage(),
+        '/5': (context) => ShownProfilePage(),
+        '/6': (context) => DonationPage(),
+        '/7': (context) => MateCafePage(),
         '/cart': (context) => CartPage(),
+        '/ShownProfileRequest': (context) => ShownProfilePage(),
       },
     );
   }

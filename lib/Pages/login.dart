@@ -34,6 +34,9 @@ class _LoginPageState extends State<LoginPage> {
             Padding(
               padding: const EdgeInsets.all(6.0),
               child: TextFormField(
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
                 onChanged: (value) {
                   setState(() {
                     _username = value;
@@ -43,6 +46,9 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Username',
+                    labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimary),
                     counterText: '${_username.length.toString()}/20'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -67,6 +73,9 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Password',
+                    labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimary),
                     counterText: '${_password.length.toString()}/15'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -108,26 +117,26 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text('LOGIN'),
                       ),
                     ),
-                    Flexible(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Go to Register Page'),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          textStyle: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                8), // Button border radius
-                          ),
-                        ),
-                        child: Text('REGISTER'),
-                      ),
-                    ),
+                    // Flexible(
+                    //   child: ElevatedButton(
+                    //     onPressed: () {
+                    //       ScaffoldMessenger.of(context).showSnackBar(
+                    //         SnackBar(
+                    //           content: Text('Go to Register Page'),
+                    //         ),
+                    //       );
+                    //     },
+                    //     style: ElevatedButton.styleFrom(
+                    //       textStyle: TextStyle(
+                    //           fontSize: 20, fontWeight: FontWeight.bold),
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(
+                    //             8), // Button border radius
+                    //       ),
+                    //     ),
+                    //     child: Text('REGISTER'),
+                    //   ),
+                    // ),
                   ],
                 ),
               ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class RequestSongPage extends StatefulWidget {
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
@@ -25,19 +24,6 @@ class _RequestSongPageState extends State<RequestSongPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         title: Text('What your mood ?'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                //for popup messeng to user, sample locking page
-                SnackBar(
-                  content: Text('Hello....'),
-                ),
-              );
-            },
-            icon: Icon(Icons.add_alert),
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,
@@ -59,7 +45,7 @@ class _RequestSongPageState extends State<RequestSongPage> {
               padding: const EdgeInsets.all(16.0),
               child: TextFormField(
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -73,7 +59,7 @@ class _RequestSongPageState extends State<RequestSongPage> {
                   labelStyle: TextStyle(
                     // fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 validator: (value) {
@@ -92,14 +78,18 @@ class _RequestSongPageState extends State<RequestSongPage> {
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   _formKey.currentState!.save();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$_songname'),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SonglistRequestPage(
+                        detail: SonglistDetail(_songname),
+                      ),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 // primary: Colors.blue,
                 // onPrimary: Colors.white,
                 padding: EdgeInsets.fromLTRB(120, 10, 120, 10),
@@ -111,11 +101,62 @@ class _RequestSongPageState extends State<RequestSongPage> {
                       BorderRadius.circular(8), // Button border radius
                 ),
               ),
-              child: Text('Sent Song'),
+              child: Text(
+                'Sent Song',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class SonglistRequestPage extends StatelessWidget {
+  final SonglistDetail detail;
+
+  const SonglistRequestPage({super.key, required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        title: Text('Music Chart Request'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'ลำดับเพลงถัดไป',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+            Text(
+              detail.songname,
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SonglistDetail {
+  final String songname;
+
+  const SonglistDetail(this.songname);
 }
