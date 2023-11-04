@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:losser_bar/Pages/Cart.dart';
-import 'food_menu.dart';
+import 'product_model_page.dart';
 import 'package:provider/provider.dart';
 
 class TabBarApp extends StatelessWidget {
@@ -17,7 +16,7 @@ class TabBarApp extends StatelessWidget {
 class OrderFoodPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var detailproductModel = Provider.of<DetailproductModel>(context);
+    var detailproductModel = Provider.of<ProductModel>(context);
     var promotions = detailproductModel.promotions;
     var products = detailproductModel.products;
 
@@ -26,25 +25,57 @@ class OrderFoodPage extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          titleTextStyle: TextStyle(
+          titleTextStyle: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 25,
           ),
-          title: Center(
-            child: const Text(
+          title: const Center(
+            child: Text(
               'Menu',
               style: TextStyle(fontSize: 25),
             ),
           ),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           actions: [
-            IconButton(
-              onPressed: () {
+            InkWell(
+              onTap: () {
                 Navigator.pushNamed(context, '/cart');
               },
-              icon: Icon(Icons.bookmark_add),
-              iconSize: 30,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(
+                      right: 9,
+                      top: 6,
+                    ),
+                    child: Icon(
+                      Icons.bookmark_add,
+                      // color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  if (detailproductModel.cart.length > 0)
+                    Positioned(
+                      top: 4.0,
+                      right: 4.0,
+                      child: CircleAvatar(
+                        radius: 8.0,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        child: Text(
+                          '${detailproductModel.cart.length}',
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
+            const SizedBox(width: 10),
           ],
           bottom: const TabBar(
             tabs: <Widget>[
@@ -68,144 +99,157 @@ class OrderFoodPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: <Widget>[
+            //Promotion
             GridView.builder(
                 padding: const EdgeInsets.all(16.0),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.5,
+                  mainAxisSpacing: 17,
+                  crossAxisSpacing: 17,
                 ),
                 itemCount: promotions.length,
                 itemBuilder: (context, index) {
                   final promotion = promotions[index];
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ProductDetailPage(product: promotion),
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                            child: Image.asset(
+                              promotion['imagePath'],
+                              fit: BoxFit.cover,
+                              width: 100,
+                              height: 100,
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                promotion['name'] +
+                                    " ${promotion['item']} " +
+                                    "${promotion['unit']} " +
+                                    'THB ' +
+                                    "${promotion['price']}",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
                               ),
-                              child: Image.asset(
-                                promotion['imagePath'],
-                                fit: BoxFit.cover,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                      onPressed: () {
+                                        // Add the product to the bag
+                                        final productModel =
+                                            Provider.of<ProductModel>(context,
+                                                listen: false);
+                                        productModel.addToCart(promotion);
+                                      },
+                                      child: Text(
+                                        'Add To Cart',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 14),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                          backgroundColor: Colors.blueGrey)),
+                                ],
                               ),
-                            ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  promotion['name'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onBackground),
-                                ),
-                                Text(
-                                  'THB ' + promotion['price'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onBackground),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 }),
             //Food
             GridView.builder(
                 padding: const EdgeInsets.all(16.0),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.5,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
                 ),
                 itemCount: products.length,
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ProductDetailPage(product: product),
+                  return Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                            child: Image.asset(
+                              product['imagePath'],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(16),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product['name'] +
+                                    " ${product['item']} " +
+                                    "${product['unit']} " +
+                                    'THB ' +
+                                    "${product['price']}",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
                               ),
-                              child: Image.asset(
-                                product['imagePath'],
-                                fit: BoxFit.cover,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                      onPressed: () {
+                                        // Add the product to the bag
+                                        final productModel =
+                                            Provider.of<ProductModel>(context,
+                                                listen: false);
+                                        productModel.addToCart(product);
+                                      },
+                                      child: Text(
+                                        'Add To Cart',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 14),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                          backgroundColor: Colors.blueGrey)),
+                                ],
                               ),
-                            ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  product['name'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onBackground),
-                                ),
-                                Text(
-                                  'THB ' + product['price'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onBackground),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 }),
@@ -249,10 +293,10 @@ class ProductDetailPage extends StatelessWidget {
                 onPressed: () {
                   // Add the product to the bag
                   final productModel =
-                      Provider.of<DetailproductModel>(context, listen: false);
-                  productModel.addToBag(product);
+                      Provider.of<ProductModel>(context, listen: false);
+                  productModel.addToCart(product);
                 },
-                child: Text("Add to Cart"),
+                child: const Text("Add to Cart"),
               ),
             ],
           ),
