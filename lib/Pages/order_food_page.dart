@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'product_model_page.dart';
+import 'Model/product_model_page.dart';
 import 'package:provider/provider.dart';
 
 class TabBarApp extends StatelessWidget {

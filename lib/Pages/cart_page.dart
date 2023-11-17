@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'product_model_page.dart';
+import 'Model/product_model_page.dart';
 
 //merage item and delete ist
 

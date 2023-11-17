@@ -1,24 +1,35 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:losser_bar/Pages/Model/test_dropdown.dart';
+import 'package:losser_bar/Pages/Model/login_model.dart';
+
 import 'package:losser_bar/Pages/cart_page.dart';
 import 'package:losser_bar/Pages/matecafe_page.dart';
 import 'package:losser_bar/Pages/Profile.dart';
 import 'package:losser_bar/Pages/home_page.dart';
-import 'package:losser_bar/Pages/login.dart';
+import 'package:losser_bar/Pages/loginscreen.dart';
+import 'package:losser_bar/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'Pages/donation_page.dart';
-import 'Pages/product_model_page.dart';
+import 'Pages/Model/product_model_page.dart';
 import 'Pages/order_food_page.dart';
 import 'Pages/request_song_page.dart';
 import 'Pages/reserve_table_page.dart';
 import 'Pages/reserve_ticket_page.dart';
 import 'Pages/shown_your_profile_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
         create: (context) => ProductModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => MemberUserModel(),
       )
     ],
     child: const MyApp(),
@@ -60,7 +71,7 @@ class MyApp extends StatelessWidget {
       //register sub class
       initialRoute: '/home',
       routes: {
-        '/login': (context) => LoginPage(),
+        '/login': (context) => LoginScreen(),
         '/profile': (context) => ProfilePage(),
         '/home': (context) => Homepage(),
         '/1': (context) => ReserveTablePage(),
