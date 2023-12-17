@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
@@ -100,7 +101,11 @@ class Homepage extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, '/3');
+                    print("Go to product page");
+                    Navigator.pushNamed(
+                      context,
+                      '/3',
+                    );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -213,6 +218,29 @@ class Homepage extends StatelessWidget {
                     ),
                   ),
                 ),
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.pushNamed(context, '/receipt');
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.all(8),
+                //     decoration: BoxDecoration(
+                //         color: Theme.of(context).colorScheme.primary,
+                //         borderRadius: BorderRadius.circular(20.0)),
+                //     child: const Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Icon(
+                //           Icons.cleaning_services,
+                //           size: 40,
+                //         ),
+                //         Text(
+                //           ("Receipt"),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),

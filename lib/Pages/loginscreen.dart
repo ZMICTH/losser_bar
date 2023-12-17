@@ -24,11 +24,6 @@ class _LoginPageState extends State<LoginScreen> {
   @override //for use first step
   void initState() {
     super.initState();
-    controller.onSync.listen((bool syncState) {
-      setState(() {
-        isloading = syncState;
-      });
-    });
   }
 
   @override
@@ -47,7 +42,6 @@ class _LoginPageState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Blank'),
               SizedBox(
                 height: 8.0,
               ),
@@ -128,12 +122,8 @@ class _LoginPageState extends State<LoginScreen> {
                                 );
                                 // _formKey.currentState!.reset();
                                 // ignore: use_build_context_synchronously
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProfilePage(),
-                                  ),
-                                );
+                                Navigator.of(context).pop();
+
                                 // Get the User object
                                 User? user = userCredential.user;
 
@@ -143,8 +133,8 @@ class _LoginPageState extends State<LoginScreen> {
                                 Map<String, dynamic> UserData =
                                     await controller.fetchLogin(userId);
 
-                                MemberUser.fromJson(UserData);
                                 MemberUser mu = MemberUser.fromJson(UserData);
+                                mu.id = userId;
                                 context
                                     .read<MemberUserModel>()
                                     .setMemberUser(mu);
@@ -192,6 +182,7 @@ class _LoginPageState extends State<LoginScreen> {
                       Flexible(
                         child: ElevatedButton(
                           onPressed: () {
+                            print('logout is call 1');
                             FirebaseAuth.instance.signOut();
                           },
                           child: Text('Logout'),
@@ -199,41 +190,6 @@ class _LoginPageState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  // Card(
-                  //   child: Padding(
-                  //     padding: const EdgeInsets.all(15.0),
-                  //     child: Consumer<MemberUserProvider>(
-                  //       builder: (context, provider, child) {
-                  //         final memberUser = provider.memberUser;
-                  //         if (memberUser != null) {
-                  //           return Column(
-                  //             crossAxisAlignment: CrossAxisAlignment.start,
-                  //             children: [
-                  //               Text("Email: $email",
-                  //                   style: TextStyle(color: Colors.black)),
-                  //               Text("First Name: ${memberUser.firstName}",
-                  //                   style: TextStyle(color: Colors.black)),
-                  //               Text("Last Name: ${memberUser.lastName}",
-                  //                   style: TextStyle(color: Colors.black)),
-                  //               Text("Postcode: ${memberUser.postcode}",
-                  //                   style: TextStyle(color: Colors.black)),
-                  //               Text("Age: ${memberUser.age}",
-                  //                   style: TextStyle(color: Colors.black)),
-                  //               // Include other fields as needed
-                  //             ],
-                  //           );
-                  //         } else {
-                  //           return Text("No user data available",
-                  //               style: TextStyle(color: Colors.black));
-                  //         }
-                  //       },
-                  //     ),
-                  //   ),
-                  // ),
-                  // Text(
-                  //   "${context.watch<MemberUserProvider>().memberUser?.toJson()}",
-                  //   style: TextStyle(color: Colors.black),
-                  // ),
                 ],
               ),
             ],

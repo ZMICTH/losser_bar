@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
@@ -11,6 +12,30 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  void _fetchUserData() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      DocumentSnapshot<Map<String, dynamic>> userData = await FirebaseFirestore
+          .instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      setState(() {
+        user = currentUser;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final memberUser = Provider.of<MemberUserModel>(context).memberUser;
@@ -20,11 +45,11 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-        title: Text('Membership'),
-        // ... other AppBar properties ...
+        title: Text('Profile'),
       ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLoggedIn) ...[
               ProfileCard(memberUser: memberUser),
@@ -51,13 +76,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("First Name: ${memberUser.firstName}",
+                    Text("nickName: ${memberUser.nicknameUser}",
                         style: TextStyle(color: Colors.black)),
-                    Text("Last Name: ${memberUser.lastName}",
+                    Text("ageUser: ${memberUser.ageUser}",
                         style: TextStyle(color: Colors.black)),
-                    Text("Postcode: ${memberUser.postcode}",
-                        style: TextStyle(color: Colors.black)),
-                    Text("Age: ${memberUser.age}",
+                    Text("phoneUser: ${memberUser.phoneUser}",
                         style: TextStyle(color: Colors.black)),
                     // Include other fields as needed
                   ],
@@ -77,6 +100,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return ElevatedButton(
       onPressed: () {
         FirebaseAuth.instance.signOut();
+        print('login is call 2');
+        context.read<MemberUserModel>().clearMemberUser();
       },
       child: Text('Logout'),
     );
@@ -112,12 +137,13 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegisterScreen(),
-                  ));
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RegisterScreen()),
+              );
+
+              // ทำสิ่งที่คุณต้องการกับผลลัพธ์ที่ได้จากหน้า RegisterScreen ต่อไป
             },
             child: Container(
               alignment: Alignment.center,

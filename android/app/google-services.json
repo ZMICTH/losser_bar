@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "347848460835",
+    "project_id": "is767-2023-sittiwit",
+    "storage_bucket": "is767-2023-sittiwit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347848460835:android:554806ac66853bb3f1ff96",
+        "android_client_info": {
+          "package_name": "com.example.frist_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnJVugl1Dec34OMYt1H2-laC3AuB4M4mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347848460835:android:708f656fc5c19cd1f1ff96",
+        "android_client_info": {
+          "package_name": "com.example.losser_bar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnJVugl1Dec34OMYt1H2-laC3AuB4M4mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

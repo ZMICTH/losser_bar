@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/product_model_page.dart';
+
 import 'package:provider/provider.dart';
-import 'Model/product_model_page.dart';
 
 //merage item and delete ist
 
@@ -12,21 +13,19 @@ class CartPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text(
           'My Order',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: Consumer<ProductModel>(
         builder: (context, model, child) {
-          if (model.cart.isEmpty) {
+          print("Call all model ${model.cart}");
+          var cartItems =
+              model.cart; // Assuming this gets the list of cart items
+          if (cartItems.isEmpty) {
             return Center(
               child: Text(
                 "Nothing in cart",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
               ),
             );
           }
@@ -34,9 +33,11 @@ class CartPage extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: model.cart.length,
+                  itemCount: cartItems.length,
                   itemBuilder: (context, index) {
-                    final product = model.cart[index];
+                    print(cartItems);
+                    final product = cartItems[index];
+
                     return Card(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -49,9 +50,8 @@ class CartPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.max,
                               children: [
-                                Image.asset(
-                                  product[
-                                      'imagePath'], // Use the correct key for the image path
+                                Image.network(
+                                  "${product['imagePath']}",
                                   width: 60,
                                   height: 100,
                                   fit: BoxFit.cover,
@@ -66,9 +66,7 @@ class CartPage extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product['name'] +
-                                            " ${product['item']} " +
-                                            "${product['unit']} ", // Use the correct key for the product name
+                                        "${product['name']} ${product['item']} ${product['unit']} ",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 22,
@@ -177,8 +175,6 @@ class CartPage extends StatelessWidget {
                   },
                 ),
               ),
-
-              //total prices
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Container(
@@ -192,51 +188,24 @@ class CartPage extends StatelessWidget {
                       Column(
                         children: [
                           const Text("Total price"),
-                          const SizedBox(
-                            height: 2,
-                          ),
-                          Consumer<ProductModel>(
-                            builder: (context, productModel, child) {
-                              return Text(
-                                  "THB ${productModel.getTotalPrice().toStringAsFixed(2)}");
-                            },
-                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                              "THB ${model.getTotalPrice().toStringAsFixed(2)}"),
                         ],
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          print("pay button ${model.cart}");
+                          Navigator.pushNamed(context, '/payment');
+                        },
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.all(8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          // backgroundColor:
-                          //     Theme.of(context).colorScheme.inversePrimary,
-                          textStyle: TextStyle(
-                            fontSize: 20, // Text size
-                            fontWeight: FontWeight.bold,
-                          ),
                         ),
                         child: const Text("Pay Now"),
                       ),
-                      // Container(
-                      //   decoration: BoxDecoration(
-                      //       border: Border.all(color: Colors.white),
-                      //       borderRadius: BorderRadius.circular(12)),
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.all(8.0),
-                      //     child: Row(
-                      //       children: [
-                      //         Text("Pay Now "),
-                      //         Icon(
-                      //           Icons.arrow_forward_ios,
-                      //           size: 16,
-                      //           color: Colors.white,
-                      //         )
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),

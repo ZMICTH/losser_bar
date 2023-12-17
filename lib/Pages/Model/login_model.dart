@@ -1,36 +1,31 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class MemberUser {
   String id = "";
-  String firstName;
-  String lastName;
-  String postcode;
-
-  final int age;
+  String? nicknameUser; // Nullable type
+  String? ageUser; // Nullable type
+  String? phoneUser; // Nullable type
 
   MemberUser(
-    this.firstName,
-    this.lastName,
-    this.postcode,
-    this.age,
+    this.nicknameUser,
+    this.ageUser,
+    this.phoneUser,
   );
 
   factory MemberUser.fromJson(Map<String, dynamic> json) {
     return MemberUser(
-      json['firstName'] as String,
-      json['lastName'] as String,
-      json['postcode'] as String,
-      json['age'] as int,
+      json['nicknameUser'] as String?, // Handling null with nullable type
+      json['ageUser'] as String?, // Handling null with nullable type
+      json['phoneUser'] as String?, // Handling null with nullable type
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'firstName': firstName,
-      'lastName': lastName,
-      'postCode': postcode,
-      'age': age,
+      'nicknameUser': nicknameUser,
+      'ageUser': ageUser,
+      'phoneUser': phoneUser,
     };
   }
 }
@@ -54,9 +49,9 @@ class MemberUserModel with ChangeNotifier {
 
   // You can add other methods here to modify the MemberUser data
   // For example, updating the first name:
-  void updateFirstName(String firstName) {
+  void updateFirstName(String nickName) {
     if (_memberUser != null) {
-      _memberUser!.firstName = firstName;
+      _memberUser!.nicknameUser = nickName;
       notifyListeners();
     }
   }

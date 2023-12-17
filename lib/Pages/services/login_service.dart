@@ -12,7 +12,7 @@ class LoginFirebaseService implements LoginService {
   @override
   Future<Map<String, dynamic>> getLogin(String userId) async {
     DocumentSnapshot qs =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        await FirebaseFirestore.instance.collection('User').doc(userId).get();
     if (qs.data() != null) {
       Map<String, dynamic> userData = qs.data() as Map<String, dynamic>;
       dynamic user = FirebaseAuth.instance.currentUser;
@@ -34,11 +34,11 @@ class LoginFirebaseService implements LoginService {
   @override
   void updateLogin(MemberUser user) {
     print('Login user id=${user.id}');
-    FirebaseFirestore.instance.collection('users').doc(user.id).update({
-      'firstName': user.firstName,
-      'lastName': user.lastName,
-      'age': user.age,
-      'postcode': user.postcode,
+    FirebaseFirestore.instance.collection('User').doc(user.id).update({
+      // 'emailUser': user.emailUser,
+      'ageUser': user.ageUser,
+      'nicknameUser': user.nicknameUser,
+      'phoneUser': user.phoneUser,
     });
   }
 }
