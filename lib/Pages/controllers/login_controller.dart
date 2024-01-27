@@ -18,7 +18,7 @@ class LoginController {
     return currentuser;
   }
 
-  void updateLogin(MemberUser user) async {
-    service.updateLogin(user);
+  void addUser(MemberUser user) async {
+    service.addUser(user);
   }
 }

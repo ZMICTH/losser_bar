@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class LoginService {
   Future<Map<String, dynamic>> getLogin(String userId);
-  void updateLogin(MemberUser user);
+  void addUser(MemberUser user);
 }
 
 class LoginFirebaseService implements LoginService {
@@ -32,13 +32,16 @@ class LoginFirebaseService implements LoginService {
   }
 
   @override
-  void updateLogin(MemberUser user) {
+  void addUser(MemberUser user) {
     print('Login user id=${user.id}');
     FirebaseFirestore.instance.collection('User').doc(user.id).update({
       // 'emailUser': user.emailUser,
       'ageUser': user.ageUser,
       'nicknameUser': user.nicknameUser,
       'phoneUser': user.phoneUser,
+      'firstnameUser': user.firstnameUser,
+      'lastnameUser': user.lastnameUser,
+      'taxId': user.idcard,
     });
   }
 }

@@ -322,6 +322,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 child: Text('OK'),
                                 onPressed: () {
                                   Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
                                 },
                               ),
                             ],

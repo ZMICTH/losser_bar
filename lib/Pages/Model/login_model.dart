@@ -5,18 +5,27 @@ class MemberUser {
   String? nicknameUser; // Nullable type
   String? ageUser; // Nullable type
   String? phoneUser; // Nullable type
+  String? firstnameUser;
+  String? lastnameUser;
+  String? idcard;
 
   MemberUser(
     this.nicknameUser,
     this.ageUser,
     this.phoneUser,
+    this.firstnameUser,
+    this.lastnameUser,
+    this.idcard,
   );
 
   factory MemberUser.fromJson(Map<String, dynamic> json) {
     return MemberUser(
       json['nicknameUser'] as String?, // Handling null with nullable type
       json['ageUser'] as String?, // Handling null with nullable type
-      json['phoneUser'] as String?, // Handling null with nullable type
+      json['phoneUser'] as String?,
+      json['firstnameUser'] as String?,
+      json['lastnameUser'] as String?,
+      json['idcard'] as String?,
     );
   }
 
@@ -26,6 +35,9 @@ class MemberUser {
       'nicknameUser': nicknameUser,
       'ageUser': ageUser,
       'phoneUser': phoneUser,
+      'firstnameUser': firstnameUser,
+      'lastnameUser': lastnameUser,
+      'taxId': idcard,
     };
   }
 }
