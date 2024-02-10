@@ -1,4 +1,6 @@
-class BillHistory {
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class BillOrder {
   String id = "";
   String tableNo;
   List<Map<String, dynamic>> orders;
@@ -7,7 +9,7 @@ class BillHistory {
   String userId;
   DateTime billingtime;
 
-  BillHistory({
+  BillOrder({
     required this.tableNo,
     required this.orders,
     required this.totalPrice,

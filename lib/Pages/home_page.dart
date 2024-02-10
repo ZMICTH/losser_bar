@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 class Homepage extends StatelessWidget {
   final myitemshows = [
-    Image.asset('images/hennessy_vs.jpg'),
-    Image.asset('images/jameson.jpg'),
+    Image.asset('images/logo.png'),
+    // Image.asset('images/jameson.jpg'),
   ];
   int myCurrentIndex = 0;
 
@@ -37,7 +37,7 @@ class Homepage extends StatelessWidget {
             items: myitemshows,
             options: CarouselOptions(
               height: 250,
-              autoPlay: true,
+              // autoPlay: true,
               // enlargeCenterPage: true,
               // aspectRatio: 16 / 9,
               autoPlayCurve: Curves.fastOutSlowIn,
@@ -67,6 +67,7 @@ class Homepage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.table_restaurant,
+                          color: Colors.grey,
                           size: 40,
                         ),
                         Text(
@@ -90,6 +91,7 @@ class Homepage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.movie,
+                          color: Colors.grey,
                           size: 40,
                         ),
                         Text(
@@ -117,6 +119,7 @@ class Homepage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.fastfood,
+                          color: Colors.grey,
                           size: 40,
                         ),
                         Text(
@@ -126,29 +129,30 @@ class Homepage extends StatelessWidget {
                     ),
                   ),
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/4');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.my_library_music,
-                          size: 40,
-                        ),
-                        Text(
-                          ("What your mood ?"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.pushNamed(context, '/4');
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.all(8),
+                //     decoration: BoxDecoration(
+                //         color: Theme.of(context).colorScheme.primary,
+                //         borderRadius: BorderRadius.circular(20.0)),
+                //     child: const Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Icon(
+                //           Icons.my_library_music,
+                //           color: Colors.grey,
+                //           size: 40,
+                //         ),
+                //         Text(
+                //           ("Request Song"),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/5');
@@ -163,6 +167,7 @@ class Homepage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.account_box_rounded,
+                          color: Colors.grey,
                           size: 40,
                         ),
                         Text(
@@ -172,29 +177,30 @@ class Homepage extends StatelessWidget {
                     ),
                   ),
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/6');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.money_rounded,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Donation"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.pushNamed(context, '/6');
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.all(8),
+                //     decoration: BoxDecoration(
+                //         color: Theme.of(context).colorScheme.primary,
+                //         borderRadius: BorderRadius.circular(20.0)),
+                //     child: const Column(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Icon(
+                //           Icons.money_rounded,
+                //           color: Colors.grey,
+                //           size: 40,
+                //         ),
+                //         Text(
+                //           ("Donation"),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/7');
@@ -209,6 +215,7 @@ class Homepage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.cleaning_services,
+                          color: Colors.grey,
                           size: 40,
                         ),
                         Text(
@@ -218,10 +225,34 @@ class Homepage extends StatelessWidget {
                     ),
                   ),
                 ),
+                InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/allreceipt');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(20.0)),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          color: Colors.grey,
+                          size: 40,
+                        ),
+                        Text(
+                          ("Order Receipt"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 // InkWell(
-                //   onTap: () {
-                //     Navigator.pushNamed(context, '/receipt');
-                //   },
+                //   // onTap: () {
+                //   //   Navigator.pushNamed(context, '');
+                //   // },
                 //   child: Container(
                 //     padding: const EdgeInsets.all(8),
                 //     decoration: BoxDecoration(
@@ -231,11 +262,13 @@ class Homepage extends StatelessWidget {
                 //       mainAxisAlignment: MainAxisAlignment.center,
                 //       children: [
                 //         Icon(
-                //           Icons.cleaning_services,
+                //           Icons.account_box_rounded,
+                //           color: Colors.grey,
                 //           size: 40,
                 //         ),
                 //         Text(
-                //           ("Receipt"),
+                //           ("Request to join table"),
+                //           textAlign: TextAlign.center,
                 //         ),
                 //       ],
                 //     ),

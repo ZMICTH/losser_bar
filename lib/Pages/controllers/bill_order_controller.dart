@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:losser_bar/Pages/Model/bill_historymodel.dart';
+import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
 
 class BillHistoryController {
@@ -11,9 +11,9 @@ class BillHistoryController {
   Stream<bool> get onSync => onSyncController.stream;
   BillHistoryController(this.service);
 
-  Future<void> addBillHistory(BillHistory billHistory) async {
+  Future<void> addBillHistory(BillOrder billOrder) async {
     onSyncController.add(true);
-    await service.addBillHistory(billHistory);
+    await service.addBillHistory(billOrder);
     onSyncController.add(false);
   }
 }

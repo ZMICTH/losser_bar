@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "347848460835",
-    "project_id": "is767-2023-sittiwit",
-    "storage_bucket": "is767-2023-sittiwit.appspot.com"
+    "project_number": "601078766720",
+    "project_id": "losser-bar",
+    "storage_bucket": "losser-bar.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:347848460835:android:554806ac66853bb3f1ff96",
-        "android_client_info": {
-          "package_name": "com.example.frist_app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDnJVugl1Dec34OMYt1H2-laC3AuB4M4mc"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:347848460835:android:708f656fc5c19cd1f1ff96",
+        "mobilesdk_app_id": "1:601078766720:android:e3d569392e67e3388fda65",
         "android_client_info": {
           "package_name": "com.example.losser_bar"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDnJVugl1Dec34OMYt1H2-laC3AuB4M4mc"
+          "current_key": "AIzaSyBA6eaj6Ozyv6cyzI18hjmPPkImYx6Z8EE"
         }
       ],
       "services": {

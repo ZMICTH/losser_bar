@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:losser_bar/Pages/Model/bill_historymodel.dart';
+import 'package:losser_bar/Pages/Model/bill_order_model.dart';
+import 'package:losser_bar/Pages/Model/login_model.dart';
 
-import 'package:losser_bar/Pages/Model/product_model_page.dart';
-import 'package:losser_bar/Pages/controllers/bill_controller.dart';
+import 'package:losser_bar/Pages/provider/product_model_page.dart';
+import 'package:losser_bar/Pages/controllers/bill_order_controller.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
 import 'package:provider/provider.dart';
 
@@ -27,7 +28,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<double> priceOrder = [];
   List<int> quantity = [];
   double totalPrice = 0.0;
-  String userId = "D1jtXbIlHOhkjVRN8OEk";
+  String userId = '';
   int? value = 0; // This is the correct field to use
 
   @override
@@ -107,7 +108,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Payment', style: TextStyle(color: Colors.black)),
+          backgroundColor: Colors.blueGrey[600]!,
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+          title: Text('Confirm Payment'),
           content: Image.asset('images/promtpay.jpeg',
               width: 300, height: 450, fit: BoxFit.cover),
           actions: <Widget>[
@@ -133,11 +136,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   // Construct a list of orders
 
                   // Create BillHistory object
-                  final billHistory = BillHistory(
+                  final billHistory = BillOrder(
                     tableNo: tableNo,
                     orders: billuser,
                     totalPrice: totalPrice,
-                    userId: userId,
+                    userId: Provider.of<MemberUserModel>(context, listen: false)
+                        .memberUser!
+                        .id,
                     billingtime: DateTime.now(),
                   );
 
