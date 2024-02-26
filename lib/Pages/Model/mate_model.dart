@@ -91,6 +91,33 @@ class AllMateCatalog {
   }
 }
 
+class BillBookingMate {
+  String id = "";
+  String tableNo;
+  Map<String, dynamic> bookingMate;
+  String userId;
+  String nicknameUser;
+  DateTime billingtime;
+
+  BillBookingMate({
+    required this.tableNo,
+    required this.bookingMate,
+    required this.userId,
+    required this.nicknameUser,
+    required this.billingtime,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'tableNo': tableNo,
+      'bookingDetails': bookingMate,
+      'userId': userId,
+      'nicknameUser': nicknameUser,
+      'billingTime': billingtime,
+    };
+  }
+}
+
 class MateCafeModel extends ChangeNotifier {
   List<MateCatalog> _matecafe = [];
 
@@ -101,11 +128,6 @@ class MateCafeModel extends ChangeNotifier {
 
   int _findmateIndex(MateCatalog mate) {
     return _booking.indexWhere((item) => item['id'] == mate.id);
-  }
-
-  void _updateCart() {
-    print(_booking);
-    notifyListeners();
   }
 
   void setMateCatalogs(List<MateCatalog> mateCatalogs) {
@@ -126,6 +148,11 @@ class MateCafeModel extends ChangeNotifier {
     };
 
     _booking.add(bookingDetails);
+    notifyListeners();
+  }
+
+  void clearbookingmate() {
+    booking.clear();
     notifyListeners();
   }
 

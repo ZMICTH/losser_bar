@@ -11,7 +11,8 @@ class MateCafePage extends StatefulWidget {
 }
 
 class _MateCafePageState extends State<MateCafePage> {
-  late MateCatalogController matecatalogcontroller;
+  late MateCatalogController matecatalogcontroller =
+      MateCatalogController(MateCatalogFirebaseService());
   bool isLoading = true;
 
   @override
@@ -81,7 +82,9 @@ class _MateCafePageState extends State<MateCafePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BookingScreen(mate: matecafe),
+        builder: (context) => BookingScreen(
+            mate: matecafe,
+            mateCatalogController: matecatalogcontroller), // Modify this line
       ),
     ).then((result) {
       if (result != null) {
@@ -184,8 +187,11 @@ class _MateCafePageState extends State<MateCafePage> {
 
 class BookingScreen extends StatefulWidget {
   final MateCatalog mate;
+  final MateCatalogController mateCatalogController; // Add this line
 
-  BookingScreen({Key? key, required this.mate}) : super(key: key);
+  BookingScreen(
+      {Key? key, required this.mate, required this.mateCatalogController})
+      : super(key: key); // Modify this line
 
   @override
   _BookingScreenState createState() => _BookingScreenState();
@@ -365,30 +371,53 @@ class _BookingScreenState extends State<BookingScreen> {
                 'Success',
                 style: TextStyle(color: Colors.white),
               ),
-              onPressed: () {
-                // Create a map with the necessary booking details
-                Map<String, dynamic> bookingDetails = {
-                  'userId': Provider.of<MemberUserModel>(context, listen: false)
-                      .memberUser!
-                      .id,
-                  'nicknameUser':
-                      Provider.of<MemberUserModel>(context, listen: false)
-                          .memberUser!
-                          .nicknameUser,
-                  'id': widget.mate.id,
-                  'name': widget.mate.nameMate,
-                  'totalprice': getTotalPrice(),
-                  'hoursbooking': selectedTimeSlots.length,
-                  'selectedTimeSlots': selectedTimeSlots.toList(),
-                };
+              onPressed: () async {
+                try {
+                  // Create a map with the necessary booking details
+                  Map<String, dynamic> bookingDetails = {
+                    'id': widget.mate.id,
+                    'name': widget.mate.nameMate,
+                    'totalprice': getTotalPrice(),
+                    'hoursbooking': selectedTimeSlots.length,
+                    'selectedTimeSlots': selectedTimeSlots.toList(),
+                  };
 
-                // Include the QR payment image path
-                print(bookingDetails);
-                // Close the dialog and return to the previous screen with bookingDetails and QR payment image path
-                Navigator.pop(context); // Close the dialog
-                Navigator.pop(context, {
-                  'bookingDetails': bookingDetails,
-                });
+                  final userId =
+                      Provider.of<MemberUserModel>(context, listen: false)
+                              .memberUser
+                              ?.id ??
+                          'defaultUserId';
+                  final userNickName =
+                      Provider.of<MemberUserModel>(context, listen: false)
+                              .memberUser
+                              ?.nicknameUser ??
+                          'defaultNickname';
+
+                  final bookingMateHistory = BillBookingMate(
+                    tableNo: "1",
+                    bookingMate: bookingDetails,
+                    userId: userId,
+                    nicknameUser: userNickName,
+                    billingtime: DateTime.now(),
+                  );
+
+                  await widget.mateCatalogController
+                      .addBookingMate(bookingMateHistory);
+                  print("Upload successful");
+
+                  // Include the QR payment image path
+                  print(bookingDetails);
+                  Provider.of<MateCafeModel>(context, listen: false)
+                      .clearbookingmate();
+                  // Close the dialog and return to the previous screen with bookingDetails and QR payment image path
+                  Navigator.pop(context); // Close the dialog
+                  Navigator.of(context).pushReplacementNamed('/home');
+                } catch (e, d) {
+                  // Handle error
+                  print(d);
+                  print('Error occurred: qr code $e');
+                  // Optionally, show a snackbar or dialog with the error message
+                }
               },
             ),
           ],

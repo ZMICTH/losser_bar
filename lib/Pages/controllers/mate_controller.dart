@@ -20,6 +20,12 @@ class MateCatalogController {
     return MateCatalogs;
   }
 
+  Future<void> addBookingMate(BillBookingMate BookingMateCafe) async {
+    onSyncController.add(true);
+    await service.addBookingMate(BookingMateCafe);
+    onSyncController.add(false);
+  }
+
   // void updateFoodAndBeverageProduct(
   //     FoodAndBeverageProduct foodandbeverageproduct) async {
   //   service.updateFoodAndBeverageProduct(foodandbeverageproduct);

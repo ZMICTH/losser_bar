@@ -3,6 +3,8 @@ import 'package:losser_bar/Pages/Model/mate_model.dart';
 
 abstract class MateCatalogService {
   Future<List<MateCatalog>> getAllMateCatalog();
+
+  addBookingMate(BillBookingMate BookingMateCafe) {}
 }
 
 class MateCatalogFirebaseService implements MateCatalogService {
@@ -15,5 +17,21 @@ class MateCatalogFirebaseService implements MateCatalogService {
     AllMateCatalog MateCatalogs = AllMateCatalog.fromSnapshot(qs);
     print(MateCatalogs.MateCatalogs);
     return MateCatalogs.MateCatalogs;
+  }
+
+  @override
+  addBookingMate(BillBookingMate BookingMateCafe) async {
+    try {
+      await FirebaseFirestore.instance.collection('booking_mate_history').add({
+        'tableNo': BookingMateCafe.tableNo,
+        'bookingDetails': BookingMateCafe.bookingMate,
+        'userId': BookingMateCafe.userId,
+        'nicknameUser': BookingMateCafe.nicknameUser,
+        'billingTime': BookingMateCafe.billingtime,
+      });
+      print("Bill Booking Mate uploaded successfully");
+    } catch (e) {
+      print('Error adding Bill Booking Mate: $e');
+    }
   }
 }

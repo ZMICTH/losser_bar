@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Model/mate_model.dart';
-import 'package:losser_bar/Pages/Model/product_model_page.dart';
+import 'package:losser_bar/Pages/Model/payorder_model.dart';
+import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
+import 'package:losser_bar/Pages/provider/product_model_page.dart';
+import 'package:losser_bar/Pages/all_receipt_page.dart';
 
 import 'package:losser_bar/Pages/cart_page.dart';
 import 'package:losser_bar/Pages/food_and_beverage_screen.dart';
@@ -14,8 +17,9 @@ import 'package:losser_bar/Pages/loginscreen.dart';
 import 'package:losser_bar/Pages/matecafe_page.dart';
 
 import 'package:losser_bar/Pages/payment_page.dart';
+import 'package:losser_bar/Pages/qr_reserve_table.dart';
 
-import 'package:losser_bar/Pages/receipt_page.dart';
+import 'package:losser_bar/Pages/receipt_order_page.dart';
 import 'package:losser_bar/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'Pages/donation_page.dart';
@@ -40,6 +44,12 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => MateCafeModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => OrderHistoryProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ReserveTableProvider(),
       ),
     ],
     child: const MyApp(),
@@ -92,9 +102,10 @@ class MyApp extends StatelessWidget {
         '/6': (context) => DonationPage(),
         '/7': (context) => MateCafePage(),
         '/cart': (context) => CartPage(),
-        '/receipt': (context) => ReceiptPage(),
+        '/allreceipt': (context) => AllReceiptPage(),
+        '/orderreceipt': (context) => ReceiptOrderPage(),
         '/payment': (context) => PaymentScreen(),
-        // '/test': (context) => MyForm(),
+        '/qrtable': (context) => QrReservations(),
       },
     );
   }
