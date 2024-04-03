@@ -1,16 +1,48 @@
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
+import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
+import 'package:losser_bar/Pages/reserve_ticket_page.dart';
+import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
+import 'package:provider/provider.dart';
 
-class Homepage extends StatelessWidget {
-  final myitemshows = [
-    Image.asset('images/logo.png'),
-    // Image.asset('images/jameson.jpg'),
-  ];
-  int myCurrentIndex = 0;
+class Homepage extends StatefulWidget {
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  late TicketConcertController ticketconcertcontroller =
+      TicketConcertController(TicketConcertFirebaseService());
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    ticketconcertcontroller =
+        TicketConcertController(TicketConcertFirebaseService());
+    _loadTicketCatalogs();
+  }
+
+  Future<void> _loadTicketCatalogs() async {
+    setState(() => isLoading = true); // Ensure loading state is true
+    try {
+      var tickets = await ticketconcertcontroller.fetchTicketConcertModel();
+      Provider.of<ReserveTicketProvider>(context, listen: false)
+          .setReserveTicket(
+              tickets); // Adjust this based on your actual implementation
+    } catch (e) {
+      print('Error fetching TicketCatalog: $e');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    var detailproductModel = Provider.of<ReserveTicketProvider>(context);
+    var ticketconcert = detailproductModel.allTicketConcert;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -31,254 +63,334 @@ class Homepage extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          CarouselSlider(
-            items: myitemshows,
-            options: CarouselOptions(
-              height: 250,
-              // autoPlay: true,
-              // enlargeCenterPage: true,
-              // aspectRatio: 16 / 9,
-              autoPlayCurve: Curves.fastOutSlowIn,
-              autoPlayAnimationDuration: const Duration(milliseconds: 600),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(
+                      height: 420, child: _buildTicketListView(ticketconcert)),
+                  _buildGridMenu(),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: GridView.count(
-              primary: false,
-              padding: const EdgeInsets.all(20),
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              crossAxisCount: 2,
-              children: <Widget>[
-                InkWell(
+    );
+  }
+
+  Widget _buildTicketListView(List<TicketConcertModel> ticketConcert) {
+    return ListView.builder(
+      itemCount: ticketConcert.length,
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        final ticket = ticketConcert[index];
+        // Assuming ticket.eventDate is a DateTime object, format it to a readable string
+        final String formattedDate =
+            DateFormat('dd MMM yyyy').format(ticket.eventDate);
+
+        // Check if the concert is sold out
+        bool isSoldOut = ticket.numberOfTickets == 0;
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: isSoldOut
+              ? _buildSoldOutWidget(ticket)
+              : InkWell(
                   onTap: () {
-                    // Navigate to the first page when the first container is tapped
-                    Navigator.pushNamed(context, '/1');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.table_restaurant,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Reserve Table"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/2');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.movie,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Reserve Ticket"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    print("Go to product page");
-                    Navigator.pushNamed(
+                    Navigator.push(
                       context,
-                      '/3',
+                      MaterialPageRoute(
+                        builder: (context) => ReserveTicketPage(
+                          eventName: ticket.eventName,
+                          eventDate: ticket
+                              .eventDate, // You might need to adjust the formatting
+                          eventImage: ticket.imageEvent,
+                          ticketPrice: ticket.ticketPrice,
+                          ticketId: ticket.id,
+                        ),
+                      ),
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    width: 200, // Set a fixed width for each item
+                    margin: EdgeInsets.only(right: 11),
+                    child: Stack(
                       children: [
-                        Icon(
-                          Icons.fastfood,
-                          color: Colors.grey,
-                          size: 40,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(ticket.imageEvent,
+                              fit: BoxFit.cover, width: 200, height: 350),
                         ),
-                        Text(
-                          ("Food and Beverage"),
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey[600]!.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              formattedDate,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 10,
+                          left: 10,
+                          right: 10,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey[100]!.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              ticket.eventName,
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                // InkWell(
-                //   onTap: () {
-                //     Navigator.pushNamed(context, '/4');
-                //   },
-                //   child: Container(
-                //     padding: const EdgeInsets.all(8),
-                //     decoration: BoxDecoration(
-                //         color: Theme.of(context).colorScheme.primary,
-                //         borderRadius: BorderRadius.circular(20.0)),
-                //     child: const Column(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         Icon(
-                //           Icons.my_library_music,
-                //           color: Colors.grey,
-                //           size: 40,
-                //         ),
-                //         Text(
-                //           ("Request Song"),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/5');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.account_box_rounded,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Your IG"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // InkWell(
-                //   onTap: () {
-                //     Navigator.pushNamed(context, '/6');
-                //   },
-                //   child: Container(
-                //     padding: const EdgeInsets.all(8),
-                //     decoration: BoxDecoration(
-                //         color: Theme.of(context).colorScheme.primary,
-                //         borderRadius: BorderRadius.circular(20.0)),
-                //     child: const Column(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         Icon(
-                //           Icons.money_rounded,
-                //           color: Colors.grey,
-                //           size: 40,
-                //         ),
-                //         Text(
-                //           ("Donation"),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/7');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.cleaning_services,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Mate Cafe"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/allreceipt');
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20.0)),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.receipt_long_outlined,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                        Text(
-                          ("Order Receipt"),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // InkWell(
-                //   // onTap: () {
-                //   //   Navigator.pushNamed(context, '');
-                //   // },
-                //   child: Container(
-                //     padding: const EdgeInsets.all(8),
-                //     decoration: BoxDecoration(
-                //         color: Theme.of(context).colorScheme.primary,
-                //         borderRadius: BorderRadius.circular(20.0)),
-                //     child: const Column(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         Icon(
-                //           Icons.account_box_rounded,
-                //           color: Colors.grey,
-                //           size: 40,
-                //         ),
-                //         Text(
-                //           ("Request to join table"),
-                //           textAlign: TextAlign.center,
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-              ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSoldOutWidget(TicketConcertModel ticket) {
+    // Assuming ticket.eventDate is a DateTime object, format it to a readable string
+    final String formattedDate =
+        DateFormat('dd MMM yyyy').format(ticket.eventDate);
+
+    return Container(
+      width: 200, // Maintain the same width for consistency
+      height: 350, // Optional: Adjust height as needed
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        image: DecorationImage(
+          image: NetworkImage(ticket.imageEvent),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Semi-transparent overlay
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          // Text and details
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              'Tickets Sold Out',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          // Positioned date and event name at the top left corner
+          Positioned(
+            top: 10,
+            left: 10,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey[600]!.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                formattedDate,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 10,
+            right: 10,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey[100]!.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                ticket.eventName,
+                style: TextStyle(color: Colors.black, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // Widget _buildTicketListView(List<TicketConcertModel> ticketConcert) {
+  //   return ListView.builder(
+  //     itemCount: ticketConcert.length,
+  //     scrollDirection: Axis.horizontal,
+  //     itemBuilder: (context, index) {
+  //       final ticket = ticketConcert[index];
+  //       // Assuming ticket.eventDate is a DateTime object, format it to a readable string
+  //       final String formattedDate =
+  //           DateFormat('dd MMM yyyy').format(ticket.eventDate);
+
+  //       return Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: InkWell(
+  //           onTap: () {
+  //             Navigator.push(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder: (context) => ReserveTicketPage(
+  //                   eventName: ticket.eventName,
+  //                   eventDate: ticket
+  //                       .eventDate, // You might need to adjust the formatting
+  //                   eventImage: ticket.imageEvent,
+  //                   ticketPrice: ticket.ticketPrice,
+  //                   ticketId: ticket.id,
+  //                 ),
+  //               ),
+  //             );
+  //           },
+  //           child: Container(
+  //             width: 200,
+  //             // Set a fixed width for each item
+  //             margin: EdgeInsets.only(right: 11),
+  //             child: Stack(
+  //               children: [
+  //                 ClipRRect(
+  //                   borderRadius: BorderRadius.circular(20),
+  //                   child: Image.network(ticket.imageEvent,
+  //                       fit: BoxFit.cover, width: 200, height: 350),
+  //                 ),
+  //                 Positioned(
+  //                   top: 10,
+  //                   left: 10,
+  //                   child: Container(
+  //                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.blueGrey[600]!.withOpacity(0.8),
+  //                       borderRadius: BorderRadius.circular(10),
+  //                     ),
+  //                     child: Text(
+  //                       formattedDate,
+  //                       style: TextStyle(color: Colors.white),
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 Positioned(
+  //                   bottom: 10,
+  //                   left: 10,
+  //                   right: 10,
+  //                   child: Container(
+  //                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.blueGrey[100]!.withOpacity(0.8),
+  //                       borderRadius: BorderRadius.circular(10),
+  //                     ),
+  //                     child: Text(
+  //                       ticket.eventName,
+  //                       style: TextStyle(color: Colors.black, fontSize: 16),
+  //                       textAlign: TextAlign.center,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  Widget _buildGridMenu() {
+    // List of menu items, each with an icon and label
+    List<Map<String, dynamic>> menuItems = [
+      {
+        'icon': Icons.table_restaurant,
+        'label': 'Reserve Table',
+        'route': '/1', // Example route, adjust as necessary
+      },
+      {
+        'icon': Icons.fastfood,
+        'label': 'Food and Beverage',
+        'route': '/3',
+      },
+      {
+        'icon': Icons.account_box_rounded,
+        'label': 'Your IG',
+        'route': '/5',
+      },
+      {
+        'icon': Icons.cleaning_services,
+        'label': 'Mate Cafe',
+        'route': '/7',
+      },
+      {
+        'icon': Icons.receipt_long_outlined,
+        'label': 'Order Receipt',
+        'route': '/allreceipt',
+      },
+      // Add more items as needed
+    ];
+
+    return GridView.builder(
+      itemCount: menuItems.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // Number of columns
+        crossAxisSpacing: 10, // Horizontal space between items
+        mainAxisSpacing: 10, // Vertical space between items
+      ),
+      itemBuilder: (context, index) {
+        var item = menuItems[index];
+        return InkWell(
+          onTap: () {
+            // Navigate to the route associated with the grid item
+            Navigator.pushNamed(context, item['route']);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  item['icon'],
+                  color: Colors.grey,
+                  size: 40,
+                ),
+                SizedBox(height: 8), // Spacing between icon and label
+                Text(
+                  item['label'],
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      // Prevents the GridView from scrolling, use it inside a SingleChildScrollView
+      physics: NeverScrollableScrollPhysics(),
+      // Set a fixed height to avoid runtime errors, calculate based on your content
+      shrinkWrap: true,
     );
   }
 }

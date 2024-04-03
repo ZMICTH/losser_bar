@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 
 class MemberUser {
   String id = "";
-  String? nicknameUser; // Nullable type
-  String? ageUser; // Nullable type
-  String? phoneUser; // Nullable type
-  String? firstnameUser;
-  String? lastnameUser;
-  String? idcard;
+  late String nicknameUser; // Nullable type
+  late String ageUser; // Nullable type
+  late String phoneUser; // Nullable type
+  late String firstnameUser;
+  late String lastnameUser;
+  late String idcard;
 
-  MemberUser(
-    this.nicknameUser,
-    this.ageUser,
-    this.phoneUser,
-    this.firstnameUser,
-    this.lastnameUser,
-    this.idcard,
-  );
+  MemberUser({
+    required this.nicknameUser,
+    required this.ageUser,
+    required this.phoneUser,
+    required this.firstnameUser,
+    required this.lastnameUser,
+    required this.idcard,
+  });
 
   factory MemberUser.fromJson(Map<String, dynamic> json) {
     return MemberUser(
-      json['nicknameUser'] as String?, // Handling null with nullable type
-      json['ageUser'] as String?, // Handling null with nullable type
-      json['phoneUser'] as String?,
-      json['firstnameUser'] as String?,
-      json['lastnameUser'] as String?,
-      json['idcard'] as String?,
+      nicknameUser: json['nicknameUser'] ?? '', // Safe handling of null values
+      ageUser: json['age']?.toString() ?? '',
+      phoneUser: json['phoneNumber'] ?? '',
+      firstnameUser: json['firstnameUser'] ?? '',
+      lastnameUser: json['lastnameUser'] ?? '',
+      idcard: json['taxId'] ?? '',
     );
   }
 
