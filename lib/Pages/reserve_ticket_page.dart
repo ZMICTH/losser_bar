@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -137,7 +136,7 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                         ),
                         child: Center(
                           child: Text(
-                            '${tableLabels[index]} - \THB ${tablePrices[index]}',
+                            '${tableLabels[index]} - THB ${tablePrices[index]}',
                             style: TextStyle(
                               color: isSelected
                                   ? Colors.deepPurple[800]!
@@ -158,7 +157,7 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.remove,
                       color: Colors.black,
                       size: 30,
@@ -175,13 +174,13 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                   ),
                   Text(
                     "$ticketQuantity",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black, // Set text color to black
                       fontSize: 25, // Set font size to 20
                     ),
                   ),
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.add,
                       color: Colors.black,
                       size: 30,
@@ -204,12 +203,12 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
               if (selectedTablePrice != null)
                 Column(
                   children: [
-                    Text('Table Price: \THB ${selectedTablePrice.toString()}',
+                    Text('Table Price: THB ${selectedTablePrice.toString()}',
                         style: const TextStyle(color: Colors.black)),
                     Text(
-                        'Ticket Price: \THB ${widget.ticketPrice.toStringAsFixed(2)}',
+                        'Ticket Price: THB ${widget.ticketPrice.toStringAsFixed(2)}',
                         style: const TextStyle(color: Colors.black)),
-                    Text('Total Price: \THB ${totalPrice.toStringAsFixed(2)}',
+                    Text('Total Price: THB ${totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(color: Colors.black)),
                   ],
                 ),
@@ -240,43 +239,30 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
         .collection('ticket_concert_catalog')
         .doc(widget.ticketId);
 
-    final newReservation = BookingTicket(
-      userId: userId,
-      ticketId: widget.ticketId,
-      nicknameUser: userNickName,
-      eventName: widget.eventName,
-      selectedTableLabel: selectedTableLabel,
-      eventDate: widget.eventDate,
-      totalPayment: totalPrice,
-      ticketQuantity: ticketQuantity,
-      payable: true,
-      checkIn: false,
-    );
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.blueGrey[600],
-          title: Text('Confirm Reserving',
+          title: const Text('Confirm Reserving',
               style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Please confirm your reservation details:'),
+              const Text('Please confirm your reservation details:'),
               // Display reservation details for user confirmation
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Image.asset(
                   'images/promtpay.jpeg'), // Assuming you want to show a payment QR or image
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text('Confirm'),
+              child: const Text('Confirm'),
               onPressed: () async {
                 Navigator.of(context)
                     .pop(); // Close the dialog immediately on confirm
@@ -321,7 +307,7 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Reservation successful')),
+                    const SnackBar(content: Text('Reservation successful')),
                   );
                   // If you're clearing selections or resetting state, do it here
 
