@@ -101,6 +101,22 @@ class BookingTicket {
     required this.checkIn,
   });
 
+  factory BookingTicket.fromJson(Map<String, dynamic> json) {
+    return BookingTicket(
+      userId: json['userId'] as String,
+      ticketId: json['ticketId'] as String,
+      nicknameUser: json['nicknameUser'] as String,
+      eventName: json['eventName'] as String,
+      selectedTableLabel: json['selectedTableLabel'] as String,
+      eventDate: (json['eventDate'] as Timestamp).toDate(),
+      totalPayment:
+          (json['totalPayment'] as num).toDouble(), // Ensures double type
+      ticketQuantity: json['ticketQuantity'] as int,
+      payable: json['payable'] as bool,
+      checkIn: json['checkIn'] as bool,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
@@ -117,7 +133,34 @@ class BookingTicket {
   }
 }
 
-class ReserveTicketProvider extends ChangeNotifier {
+class AllReservationTicketModel {
+  final List<BookingTicket> allReservationTicketModel;
+
+  AllReservationTicketModel(this.allReservationTicketModel);
+
+  factory AllReservationTicketModel.fromJson(List<dynamic> json) {
+    List<BookingTicket> allReservationTicketModel;
+
+    allReservationTicketModel =
+        json.map((item) => BookingTicket.fromJson(item)).toList();
+
+    return AllReservationTicketModel(allReservationTicketModel);
+  }
+
+  factory AllReservationTicketModel.fromSnapshot(QuerySnapshot qs) {
+    List<BookingTicket> allReservationTicketModel;
+
+    allReservationTicketModel = qs.docs.map((DocumentSnapshot ds) {
+      BookingTicket bookingticketmodel =
+          BookingTicket.fromJson(ds.data() as Map<String, dynamic>);
+      bookingticketmodel.reserveticketId = ds.id;
+      return bookingticketmodel;
+    }).toList();
+    return AllReservationTicketModel(allReservationTicketModel);
+  }
+}
+
+class TicketcatalogProvider extends ChangeNotifier {
   List<TicketConcertModel> _allTicketConcert = [];
 
   List<TicketConcertModel> get allTicketConcert => _allTicketConcert;
@@ -134,6 +177,25 @@ class ReserveTicketProvider extends ChangeNotifier {
 
   void clearbookingticket() {
     allTicketConcert.clear();
+    notifyListeners();
+  }
+}
+
+class ReservationTicketProvider extends ChangeNotifier {
+  List<BookingTicket> _allReservationTicket = [];
+
+  List<BookingTicket> get allReservationTicket => _allReservationTicket;
+
+  void setAllReservationTicket(List<BookingTicket> reservationtickets) {
+    _allReservationTicket = reservationtickets;
+    notifyListeners();
+  }
+
+  void setReservationsForUser(String userId) {
+    var filteredList = _allReservationTicket
+        .where((ticket) => ticket.userId == userId)
+        .toList();
+    _allReservationTicket = filteredList;
     notifyListeners();
   }
 }

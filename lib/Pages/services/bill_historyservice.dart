@@ -6,8 +6,7 @@ class BillHistoryService {
   Future<void> addBillHistory(BillOrder billOrder) async {
     try {
       await FirebaseFirestore.instance.collection('order_history').add({
-        'order_history'
-            'tableNo': billOrder.tableNo,
+        'tableNo': billOrder.tableNo,
         'orders': billOrder.orders,
         'totalPrice': billOrder.totalPrice,
         'userId': billOrder.userId,

@@ -28,7 +28,7 @@ class _HomepageState extends State<Homepage> {
     setState(() => isLoading = true); // Ensure loading state is true
     try {
       var tickets = await ticketconcertcontroller.fetchTicketConcertModel();
-      Provider.of<ReserveTicketProvider>(context, listen: false)
+      Provider.of<TicketcatalogProvider>(context, listen: false)
           .setReserveTicket(
               tickets); // Adjust this based on your actual implementation
     } catch (e) {
@@ -40,7 +40,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    var detailproductModel = Provider.of<ReserveTicketProvider>(context);
+    var detailproductModel = Provider.of<TicketcatalogProvider>(context);
     var ticketconcert = detailproductModel.allTicketConcert;
 
     return Scaffold(
@@ -64,7 +64,7 @@ class _HomepageState extends State<Homepage> {
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 children: [
@@ -112,7 +112,7 @@ class _HomepageState extends State<Homepage> {
                   },
                   child: Container(
                     width: 200, // Set a fixed width for each item
-                    margin: EdgeInsets.only(right: 11),
+                    margin: const EdgeInsets.only(right: 11),
                     child: Stack(
                       children: [
                         ClipRRect(
@@ -124,7 +124,7 @@ class _HomepageState extends State<Homepage> {
                           top: 10,
                           left: 10,
                           child: Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.blueGrey[600]!.withOpacity(0.8),
@@ -132,7 +132,7 @@ class _HomepageState extends State<Homepage> {
                             ),
                             child: Text(
                               formattedDate,
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
@@ -141,7 +141,7 @@ class _HomepageState extends State<Homepage> {
                           left: 10,
                           right: 10,
                           child: Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.blueGrey[100]!.withOpacity(0.8),
@@ -149,8 +149,8 @@ class _HomepageState extends State<Homepage> {
                             ),
                             child: Text(
                               ticket.eventName,
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 16),
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 16),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -189,7 +189,7 @@ class _HomepageState extends State<Homepage> {
             ),
           ),
           // Text and details
-          Align(
+          const Align(
             alignment: Alignment.center,
             child: Text(
               'Tickets Sold Out',
@@ -206,14 +206,14 @@ class _HomepageState extends State<Homepage> {
             top: 10,
             left: 10,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.blueGrey[600]!.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 formattedDate,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ),
@@ -222,14 +222,14 @@ class _HomepageState extends State<Homepage> {
             left: 10,
             right: 10,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.blueGrey[100]!.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 ticket.eventName,
-                style: TextStyle(color: Colors.black, fontSize: 16),
+                style: const TextStyle(color: Colors.black, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -238,86 +238,6 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
-
-  // Widget _buildTicketListView(List<TicketConcertModel> ticketConcert) {
-  //   return ListView.builder(
-  //     itemCount: ticketConcert.length,
-  //     scrollDirection: Axis.horizontal,
-  //     itemBuilder: (context, index) {
-  //       final ticket = ticketConcert[index];
-  //       // Assuming ticket.eventDate is a DateTime object, format it to a readable string
-  //       final String formattedDate =
-  //           DateFormat('dd MMM yyyy').format(ticket.eventDate);
-
-  //       return Padding(
-  //         padding: const EdgeInsets.all(8.0),
-  //         child: InkWell(
-  //           onTap: () {
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => ReserveTicketPage(
-  //                   eventName: ticket.eventName,
-  //                   eventDate: ticket
-  //                       .eventDate, // You might need to adjust the formatting
-  //                   eventImage: ticket.imageEvent,
-  //                   ticketPrice: ticket.ticketPrice,
-  //                   ticketId: ticket.id,
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //           child: Container(
-  //             width: 200,
-  //             // Set a fixed width for each item
-  //             margin: EdgeInsets.only(right: 11),
-  //             child: Stack(
-  //               children: [
-  //                 ClipRRect(
-  //                   borderRadius: BorderRadius.circular(20),
-  //                   child: Image.network(ticket.imageEvent,
-  //                       fit: BoxFit.cover, width: 200, height: 350),
-  //                 ),
-  //                 Positioned(
-  //                   top: 10,
-  //                   left: 10,
-  //                   child: Container(
-  //                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  //                     decoration: BoxDecoration(
-  //                       color: Colors.blueGrey[600]!.withOpacity(0.8),
-  //                       borderRadius: BorderRadius.circular(10),
-  //                     ),
-  //                     child: Text(
-  //                       formattedDate,
-  //                       style: TextStyle(color: Colors.white),
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 Positioned(
-  //                   bottom: 10,
-  //                   left: 10,
-  //                   right: 10,
-  //                   child: Container(
-  //                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  //                     decoration: BoxDecoration(
-  //                       color: Colors.blueGrey[100]!.withOpacity(0.8),
-  //                       borderRadius: BorderRadius.circular(10),
-  //                     ),
-  //                     child: Text(
-  //                       ticket.eventName,
-  //                       style: TextStyle(color: Colors.black, fontSize: 16),
-  //                       textAlign: TextAlign.center,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   Widget _buildGridMenu() {
     // List of menu items, each with an icon and label
@@ -347,12 +267,16 @@ class _HomepageState extends State<Homepage> {
         'label': 'Order Receipt',
         'route': '/allreceipt',
       },
-      // Add more items as needed
+      {
+        'icon': Icons.receipt_long_outlined,
+        'label': 'QR Ticket concert',
+        'route': '/qrticket',
+      },
     ];
 
     return GridView.builder(
       itemCount: menuItems.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2, // Number of columns
         crossAxisSpacing: 10, // Horizontal space between items
         mainAxisSpacing: 10, // Vertical space between items
@@ -377,7 +301,7 @@ class _HomepageState extends State<Homepage> {
                   color: Colors.grey,
                   size: 40,
                 ),
-                SizedBox(height: 8), // Spacing between icon and label
+                const SizedBox(height: 8), // Spacing between icon and label
                 Text(
                   item['label'],
                   textAlign: TextAlign.center,
@@ -388,7 +312,7 @@ class _HomepageState extends State<Homepage> {
         );
       },
       // Prevents the GridView from scrolling, use it inside a SingleChildScrollView
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       // Set a fixed height to avoid runtime errors, calculate based on your content
       shrinkWrap: true,
     );

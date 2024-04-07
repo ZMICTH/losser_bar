@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:losser_bar/Pages/Model/product_model_page.dart';
+import 'package:losser_bar/Pages/provider/product_model_page.dart';
 
 import 'package:provider/provider.dart';
 

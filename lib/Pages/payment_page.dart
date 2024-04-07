@@ -152,6 +152,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   // Navigate to the success page
                   Provider.of<ProductModel>(context, listen: false)
                       .clearproduct();
+                  Navigator.pop(context);
                   Navigator.of(context).pushReplacementNamed('/home');
                 } catch (e, d) {
                   // Handle error

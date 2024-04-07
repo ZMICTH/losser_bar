@@ -2,142 +2,123 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class PayOrder {
-  late String id = "";
-  late String tableNo;
-  late List<Map<String, dynamic>> orders;
-  late double totalPrice;
-  late String userId;
-  late DateTime billingtime;
+  String id;
+  String tableNo;
+  List<Map<String, dynamic>> orders;
+  double totalPrice;
+  String userId;
+  DateTime billingTime;
 
-  PayOrder(
-    this.tableNo,
-    this.orders,
-    this.totalPrice,
-    this.userId,
-    this.billingtime,
-  );
+  PayOrder({
+    this.id = '',
+    required this.tableNo,
+    required this.orders,
+    required this.totalPrice,
+    required this.userId,
+    required this.billingTime,
+  });
 
   factory PayOrder.fromJson(Map<String, dynamic> json) {
-    var ordersJson = json['orders'] as List? ?? [];
-    List<Map<String, dynamic>> orders =
-        ordersJson.map((order) => order as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> orders = (json['orders'] as List? ?? [])
+        .map((order) => order as Map<String, dynamic>)
+        .toList();
 
     return PayOrder(
-      json['tableNo'] as String? ?? 'default value',
-      orders,
-      (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
-      json['userId'] as String? ?? 'default value',
-      json['billingtime'] as DateTime? ?? DateTime.now(),
+      tableNo: json['tableNo'] as String? ?? 'default value',
+      orders: orders,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      userId: json['userId'] as String? ?? 'default value',
+      billingTime: json['billingTime'] as DateTime? ?? DateTime.now(),
     );
   }
 
   factory PayOrder.fromSnapshot(DocumentSnapshot snapshot) {
-    Map<String, dynamic> json = snapshot.data() as Map<String, dynamic>? ?? {};
+    var json = snapshot.data()! as Map<String, dynamic>; // Assuming data exists
 
-    // Handling 'orders' field
-    var ordersJson = json['orders'] as List? ?? [];
-    List<Map<String, dynamic>> orders =
-        ordersJson.map((order) => order as Map<String, dynamic>).toList();
+    List<Map<String, dynamic>> orders = (json['orders'] as List? ?? [])
+        .map((order) => order as Map<String, dynamic>)
+        .toList();
 
-    // Safe casting with default values for nullable fields
-    String tableNo = json['tableNo'] as String? ?? 'default';
-    double totalPrice = (json['totalPrice'] as num?)?.toDouble() ?? 0.0;
-    String userId = json['userId'] as String? ?? 'default';
-
-    // Safe parsing for 'billingtime'
-    String billingTimeString = json['billingtime'] as String? ?? '';
-    DateTime billingtime =
-        DateTime.tryParse(billingTimeString) ?? DateTime.now();
+    DateTime billingTime = (json['billingTime'] as Timestamp).toDate();
 
     return PayOrder(
-      tableNo,
-      orders,
-      totalPrice,
-      userId,
-      billingtime,
+      id: snapshot.id,
+      tableNo: json['tableNo'] ?? 'default',
+      orders: orders,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      userId: json['userId'] ?? 'default',
+      billingTime: billingTime,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'tableNo': tableNo,
-      'orders': orders
-          .map((order) => {
-                'id': order['id'],
-                'name': order['name'],
-                'price': order['price'],
-                'imagePath': order['imagePath'],
-                'item': order['item'],
-                'unit': order['unit'],
-                'type': order['type'],
-                'quantity': order['quantity'],
-              })
-          .toList(),
+      'orders': orders.map((order) {
+        return {
+          'id': order['id'],
+          'name': order['name'],
+          'price': order['price'],
+          'imagePath': order['imagePath'],
+          'item': order['item'],
+          'unit': order['unit'],
+          'type': order['type'],
+          'quantity': order['quantity'],
+        };
+      }).toList(),
       'totalPrice': totalPrice,
       'userId': userId,
-      'billingTime': billingtime,
+      'billingTime': billingTime,
     };
   }
 }
 
 class AllOrderHistory {
-  final List<PayOrder> ordershistory;
+  final List<PayOrder> ordersHistory;
 
-  AllOrderHistory(this.ordershistory);
+  AllOrderHistory(this.ordersHistory);
 
   factory AllOrderHistory.fromJson(List<dynamic> json) {
-    List<PayOrder> ordershistory =
-        json.map((item) => PayOrder.fromJson(item)).toList();
-    return AllOrderHistory(ordershistory);
+    List<PayOrder> ordersHistory = json
+        .map((item) => PayOrder.fromJson(item as Map<String, dynamic>))
+        .toList();
+    return AllOrderHistory(ordersHistory);
   }
 
-  factory AllOrderHistory.fromSnapshot(QuerySnapshot qs) {
-    List<PayOrder> ordershistory;
-
-    ordershistory = qs.docs.map((DocumentSnapshot ds) {
-      PayOrder orderhistory =
-          PayOrder.fromJson(ds.data() as Map<String, dynamic>);
-      orderhistory.id = ds.id;
-      return orderhistory;
+  factory AllOrderHistory.fromSnapshot(QuerySnapshot snapshot) {
+    List<PayOrder> ordersHistory = snapshot.docs.map((doc) {
+      var order = PayOrder.fromSnapshot(doc);
+      return order;
     }).toList();
-
-    return AllOrderHistory(ordershistory);
+    return AllOrderHistory(ordersHistory);
   }
+
   Map<String, dynamic> toJson() {
+    print(ordersHistory);
     return {
-      'ordershistory':
-          ordershistory.map((orderhisory) => orderhisory.toJson()).toList(),
+      'ordersHistory': ordersHistory.map((order) => order.toJson()).toList(),
     };
   }
 }
 
 class OrderHistoryProvider extends ChangeNotifier {
-  List<PayOrder>? _allOrderHistory = [];
+  List<PayOrder> _allOrderHistory = [];
+  List<PayOrder> get allOrderHistory => _allOrderHistory;
 
-  List<PayOrder>? get allOrderHistory => _allOrderHistory;
-
-  void setOrderHistory(List<PayOrder>? ordershistory) {
-    _allOrderHistory = ordershistory;
+  void setAllOrderHistories(List<PayOrder> reservationtickets) {
+    _allOrderHistory = reservationtickets;
     notifyListeners();
   }
 
-  void setOrderHistories(List<PayOrder> newOrderHistoriesData) {
-    _allOrderHistory = newOrderHistoriesData;
+  void setOrderHistories(List<PayOrder> userId) {
+    var filteredList =
+        _allOrderHistory.where((ticket) => ticket.userId == userId).toList();
+    _allOrderHistory = filteredList;
     notifyListeners();
   }
 
-  // void addCar(Car car) {
-  //   print("addCar @ provider is called");
-  //   _allCars!.add(car);
-  //   notifyListeners();
-  // }
-
-  // void updateCar(Car updatedCar) {
-  //   print("updateCar @ provider is called");
-  //   int index = _allCars!.indexWhere((car) => car.id == updatedCar.id);
-  //   if (index != -1) {
-  //     _allCars![index] = updatedCar;
-  //     notifyListeners();
-  //   }
-  // }
+  void clearOrderHistories() {
+    _allOrderHistory = [];
+    notifyListeners();
+  }
 }

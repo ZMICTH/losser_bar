@@ -5,6 +5,7 @@ import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
 
 class TicketConcertController {
   List<TicketConcertModel> allTicketConcertModel = List.empty();
+  List<BookingTicket> allReservationTicketModel = List.empty();
   final TicketConcertService service;
 
   StreamController<bool> onSyncController = StreamController();
@@ -13,7 +14,7 @@ class TicketConcertController {
   TicketConcertController(this.service);
 
   Future<List<TicketConcertModel>> fetchTicketConcertModel() async {
-    print("fetchFoodAndBeverageProduct was: ${allTicketConcertModel}");
+    print("fetchTicketConcertModel was: ${allTicketConcertModel}");
     onSyncController.add(true);
     allTicketConcertModel = await service.getAllTicketConcertModel();
     onSyncController.add(false);
@@ -24,5 +25,13 @@ class TicketConcertController {
     onSyncController.add(true);
     await service.addReserveTicket(BookingTicketConcert);
     onSyncController.add(false);
+  }
+
+  Future<List<BookingTicket>> fetchReservationTicket() async {
+    print("fetchReservationTicket was: ${allReservationTicketModel}");
+    onSyncController.add(true);
+    allReservationTicketModel = await service.getAllReservationTicket();
+    onSyncController.add(false);
+    return allReservationTicketModel;
   }
 }

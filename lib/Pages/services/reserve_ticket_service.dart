@@ -5,6 +5,8 @@ abstract class TicketConcertService {
   Future<List<TicketConcertModel>> getAllTicketConcertModel();
 
   addReserveTicket(BookingTicket BookingTicketConcert) {}
+
+  Future<List<BookingTicket>> getAllReservationTicket();
 }
 
 class TicketConcertFirebaseService implements TicketConcertService {
@@ -40,5 +42,17 @@ class TicketConcertFirebaseService implements TicketConcertService {
     } catch (e) {
       print('Error adding Reservation: $e');
     }
+  }
+
+  @override
+  Future<List<BookingTicket>> getAllReservationTicket() async {
+    print("getAllReservationTicket is called");
+    QuerySnapshot qs =
+        await FirebaseFirestore.instance.collection('reservation_ticket').get();
+    print("ReservationTicket count: ${qs.docs.length}");
+    AllReservationTicketModel allReservationTicketModel =
+        AllReservationTicketModel.fromSnapshot(qs);
+    print(allReservationTicketModel.allReservationTicketModel);
+    return allReservationTicketModel.allReservationTicketModel;
   }
 }
