@@ -5,6 +5,7 @@ import 'package:losser_bar/Pages/services/reserve_table_service.dart';
 
 class ReserveTableHistoryController {
   List<ReserveTableHistory> ReserveTableHistories = List.empty();
+  List<TableCatalog> TableCatalogs = List.empty();
   final ReserveTableHistoryService service;
 
   StreamController<bool> onSyncController = StreamController();
@@ -12,8 +13,16 @@ class ReserveTableHistoryController {
 
   ReserveTableHistoryController(this.service);
 
+  Future<List<TableCatalog>> fetchTableCatalog() async {
+    print("fetchTableCatalog was: ${TableCatalogs}");
+    onSyncController.add(true);
+    TableCatalogs = await service.getAllTableCatalog();
+    onSyncController.add(false);
+    return TableCatalogs;
+  }
+
   Future<List<ReserveTableHistory>> fetchReserveTableHistory() async {
-    print("fetchMateCatalog was: ${ReserveTableHistories}");
+    print("fetchReserveTableHistory was: ${ReserveTableHistories}");
     onSyncController.add(true);
     ReserveTableHistories = await service.getAllReserveTableHistory();
     onSyncController.add(false);

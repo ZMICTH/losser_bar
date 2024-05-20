@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 
 class TicketConcertModel {
   String id = "";
@@ -54,6 +55,7 @@ class AllTicketConcertModel {
   AllTicketConcertModel(this.allTicketConcertModel);
 
   factory AllTicketConcertModel.fromJson(List<dynamic> json) {
+    print(json);
     List<TicketConcertModel> allTicketConcertModel;
 
     allTicketConcertModel =
@@ -87,6 +89,9 @@ class BookingTicket {
   int ticketQuantity;
   bool payable;
   bool checkIn;
+  DateTime paymentTime;
+  int sharedCount;
+  List<String>? sharedWith;
 
   BookingTicket({
     required this.userId,
@@ -99,6 +104,9 @@ class BookingTicket {
     required this.ticketQuantity,
     required this.payable,
     required this.checkIn,
+    required this.paymentTime,
+    required this.sharedCount,
+    required this.sharedWith,
   });
 
   factory BookingTicket.fromJson(Map<String, dynamic> json) {
@@ -114,6 +122,11 @@ class BookingTicket {
       ticketQuantity: json['ticketQuantity'] as int,
       payable: json['payable'] as bool,
       checkIn: json['checkIn'] as bool,
+      paymentTime: (json['eventDate'] as Timestamp).toDate(),
+      sharedCount: json['sharedCount'] as int? ?? 0,
+      sharedWith: json['sharedWith'] != null
+          ? List<String>.from(json['sharedWith'] as List)
+          : null,
     );
   }
 
@@ -129,6 +142,9 @@ class BookingTicket {
       'ticketQuantity': ticketQuantity,
       'payable': payable,
       'checkIn': checkIn,
+      'paymentTime': paymentTime,
+      'sharedCount': sharedCount,
+      'sharedWith': sharedWith,
     };
   }
 }
@@ -183,8 +199,12 @@ class TicketcatalogProvider extends ChangeNotifier {
 
 class ReservationTicketProvider extends ChangeNotifier {
   List<BookingTicket> _allReservationTicket = [];
+  List<TableCatalog> _tables = [];
+  DateTime? _eventDate;
 
   List<BookingTicket> get allReservationTicket => _allReservationTicket;
+  List<TableCatalog> get tables => _tables;
+  DateTime? get eventDate => _eventDate;
 
   void setAllReservationTicket(List<BookingTicket> reservationtickets) {
     _allReservationTicket = reservationtickets;
@@ -197,5 +217,30 @@ class ReservationTicketProvider extends ChangeNotifier {
         .toList();
     _allReservationTicket = filteredList;
     notifyListeners();
+  }
+
+  set eventDate(DateTime? newDate) {
+    if (_eventDate != newDate) {
+      _eventDate = newDate;
+      filterTablesForDate(newDate);
+      notifyListeners();
+    }
+  }
+
+  void setTables(List<TableCatalog> newTables) {
+    _tables = newTables;
+    filterTablesForDate(_eventDate);
+    notifyListeners();
+  }
+
+  void filterTablesForDate(DateTime? date) {
+    if (date != null) {
+      _tables = _tables
+          .where((table) =>
+              table.onTheDay.year == date.year &&
+              table.onTheDay.month == date.month &&
+              table.onTheDay.day == date.day)
+          .toList();
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 
 abstract class ReserveTableHistoryService {
   Future<List<ReserveTableHistory>> getAllReserveTableHistory();
+  Future<List<TableCatalog>> getAllTableCatalog();
 
   addReserveTable(ReserveTable BookingReserveTable) {}
 }
@@ -24,16 +25,32 @@ class ReserveTableFirebaseService implements ReserveTableHistoryService {
   addReserveTable(ReserveTable BookingReserveTable) async {
     try {
       await FirebaseFirestore.instance.collection('reservation_table').add({
+        'selectedTableId': BookingReserveTable.selectedTableId,
+        'quantityTable': BookingReserveTable.quantityTable,
         'selectedTableLabel': BookingReserveTable.selectedTableLabel,
-        'selectedTablePrice': BookingReserveTable.selectedTablePrice,
+        'totalPrices': BookingReserveTable.totalPrices,
         'formattedSelectedDay': BookingReserveTable.formattedSelectedDay,
         'userId': BookingReserveTable.userId,
         'nicknameUser': BookingReserveTable.nicknameUser,
         'checkIn': BookingReserveTable.checkIn,
+        'selectedSeats': BookingReserveTable.selectedSeats,
+        'payable': BookingReserveTable.payable,
+        'userPhone': BookingReserveTable.userPhone,
+        'paymentTime': BookingReserveTable.paymentTime,
       });
       print("Reservation uploaded successfully");
     } catch (e) {
       print('Error adding Reservation: $e');
     }
+  }
+
+  Future<List<TableCatalog>> getAllTableCatalog() async {
+    print("getAllTableCatalog is called");
+    QuerySnapshot qs =
+        await FirebaseFirestore.instance.collection('table_catalog').get();
+    print("TableCatalog count: ${qs.docs.length}");
+    AllTableCatalog TableCatalogs = AllTableCatalog.fromSnapshot(qs);
+    print(TableCatalogs.tablecatalogs);
+    return TableCatalogs.tablecatalogs;
   }
 }

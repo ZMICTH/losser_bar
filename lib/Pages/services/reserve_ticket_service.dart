@@ -37,6 +37,7 @@ class TicketConcertFirebaseService implements TicketConcertService {
         'ticketQuantity': BookingTicketConcert.ticketQuantity,
         'payable': BookingTicketConcert.payable,
         'checkIn': BookingTicketConcert.checkIn,
+        'paymentTime': BookingTicketConcert.paymentTime,
       });
       print("Reservation uploaded successfully");
     } catch (e) {

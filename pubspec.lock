@@ -41,6 +41,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  barcode:
+    dependency: transitive
+    description:
+      name: barcode
+      sha256: "1fe4a55344505850517ce72d4a3a7b9ccf51b0dc1631ee7e552f6eacc4947f96"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.7"
+  bidi:
+    dependency: transitive
+    description:
+      name: bidi
+      sha256: "1a7d0c696324b2089f72e7671fd1f1f64fef44c980f3cebc84e803967c597b63"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.10"
   boolean_selector:
     dependency: transitive
     description:
@@ -145,6 +161,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  date_picker_timeline:
+    dependency: "direct main"
+    description:
+      name: date_picker_timeline
+      sha256: dc754de3a99ad654c5633072cb9edac27e0b2875c81c7286e8c6cf419082a110
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.5"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
+  excel:
+    dependency: "direct main"
+    description:
+      name: excel
+      sha256: c299b5ccf14bb7f24fe64ca1a15e4a3796ab563575087ce3f7e07fc2e3429db5
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.2"
   fake_async:
     dependency: transitive
     description:
@@ -488,6 +528,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  path_parsing:
+    dependency: transitive
+    description:
+      name: path_parsing
+      sha256: e3e67b1629e6f7e8100b367d3db6ba6af4b1f0bb80f64db18ef1fbabd2fa9ccf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   path_provider:
     dependency: "direct main"
     description:
@@ -536,6 +584,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
+  pdf:
+    dependency: "direct main"
+    description:
+      name: pdf
+      sha256: "243f05342fc0bdf140eba5b069398985cdbdd3dbb1d776cf43d5ea29cc570ba6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.10.8"
+  pdf_widget_wrapper:
+    dependency: transitive
+    description:
+      name: pdf_widget_wrapper
+      sha256: e9d31fd7782ce28ae346b127ea7d1cd748d799bddee379f31191693610e23749
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   petitparser:
     dependency: transitive
     description:
@@ -568,6 +632,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.3"
+  printing:
+    dependency: "direct main"
+    description:
+      name: printing
+      sha256: "1c99cab90ebcc1fff65831d264627d5b529359d563e53f33ab9b8117f2d280bc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.12.0"
+  promptpay_qrcode_generate:
+    dependency: "direct main"
+    description:
+      name: promptpay_qrcode_generate
+      sha256: "1473145f3804eca50dd838b4a6dd4d2e56fd8342f94513afd466d21f6e60e359"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   provider:
     dependency: "direct main"
     description:

@@ -1,11 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/bill_order_model.dart';
+import 'package:losser_bar/Pages/Model/login_model.dart';
+import 'package:losser_bar/Pages/controllers/bill_order_controller.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
-
+import 'package:losser_bar/Pages/services/bill_historyservice.dart';
 import 'package:provider/provider.dart';
 
-//merage item and delete ist
+class CartPage extends StatefulWidget {
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
 
-class CartPage extends StatelessWidget {
+class _CartPageState extends State<CartPage> {
+  final BillHistoryController billHistoryController =
+      BillHistoryController(BillHistoryFirebaseService());
+
+  String tableNo = "1";
+  String roundTable = "1";
+  List<String> nameOrder = [];
+  List<double> priceOrder = [];
+  List<int> quantity = [];
+  double totalPrice = 0.0;
+  double totalQuantity = 0;
+  String userId = '';
+  int? value = 0;
+  bool paymentStatus = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +34,7 @@ class CartPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text(
           'My Order',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: Consumer<ProductModel>(
@@ -187,24 +208,30 @@ class CartPage extends StatelessWidget {
                     children: [
                       Column(
                         children: [
-                          const Text("Total price"),
+                          const Text(
+                            "Total price",
+                            style: TextStyle(color: Colors.white),
+                          ),
                           const SizedBox(height: 2),
                           Text(
-                              "THB ${model.getTotalPrice().toStringAsFixed(2)}"),
+                            "THB ${model.getTotalPrice().toStringAsFixed(2)}",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            "Total items: ${Provider.of<ProductModel>(context, listen: true).getTotalQuantity()}",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ],
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          print("pay button ${model.cart}");
-                          Navigator.pushNamed(context, '/payment');
-                        },
+                        onPressed: performConfirmOrder,
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.all(8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text("Pay Now"),
+                        child: const Text("Confirm Orders"),
                       ),
                     ],
                   ),
@@ -214,6 +241,98 @@ class CartPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  void performConfirmOrder() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.blueGrey[600]!,
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+          title: Text('Confirm Orders'),
+          content: Text(
+              'Please proceed with payment once you have received all of your food or beverage.',
+              style: TextStyle(color: Colors.white, fontSize: 18)),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Confirm',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              onPressed: () async {
+                try {
+                  // Retrieve necessary data
+
+                  var cart =
+                      Provider.of<ProductModel>(context, listen: false).cart;
+                  List<Map<String, dynamic>> billuser =
+                      cart.cast<Map<String, dynamic>>();
+                  totalPrice = Provider.of<ProductModel>(context, listen: false)
+                      .getTotalPrice() as double;
+                  totalQuantity =
+                      Provider.of<ProductModel>(context, listen: false)
+                          .getTotalQuantity() as double;
+
+                  print("UserID who order $userId");
+
+                  // Update inventory for each item in the cart
+                  for (var item in billuser) {
+                    await FirebaseFirestore.instance
+                        .collection('food_beverage')
+                        .doc(item['id'])
+                        .update({
+                      'quantity': FieldValue.increment(
+                          -item['quantity']) // decrement stock
+                    });
+                  }
+
+                  // Create BillHistory object
+                  final billHistory = BillOrder(
+                    tableNo: tableNo,
+                    roundTable: roundTable,
+                    orders: billuser,
+                    totalPrice: totalPrice,
+                    totalQuantity: totalQuantity,
+                    userId: Provider.of<MemberUserModel>(context, listen: false)
+                        .memberUser!
+                        .id,
+                    billingTime: DateTime.now(),
+                    paymentStatus: paymentStatus,
+                    userNickName:
+                        Provider.of<MemberUserModel>(context, listen: false)
+                            .memberUser!
+                            .nicknameUser,
+                  );
+
+                  await billHistoryController.addBillHistory(billHistory);
+                  print("Upload successful");
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Orders successful'),
+                    backgroundColor: Colors.green,
+                  ));
+
+                  // Navigate to the success page
+                  Provider.of<ProductModel>(context, listen: false)
+                      .clearproduct();
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                } catch (e, d) {
+                  // Handle error
+                  print(d);
+                  print('Error occurred: $e');
+                  // Optionally, show a snackbar or dialog with the error message
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

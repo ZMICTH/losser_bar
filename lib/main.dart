@@ -1,12 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Model/mate_model.dart';
 import 'package:losser_bar/Pages/Model/payorder_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
-import 'package:losser_bar/Pages/all_receipt_page.dart';
+import 'package:losser_bar/Pages/Order_receipt.dart';
 import 'package:losser_bar/Pages/cart_page.dart';
 import 'package:losser_bar/Pages/food_and_beverage_screen.dart';
 import 'package:losser_bar/Pages/Profile.dart';
@@ -15,7 +16,8 @@ import 'package:losser_bar/Pages/loginscreen.dart';
 import 'package:losser_bar/Pages/matecafe_page.dart';
 import 'package:losser_bar/Pages/payment_page.dart';
 import 'package:losser_bar/Pages/qr_reserve_table.dart';
-import 'package:losser_bar/Pages/receipt_order_page.dart';
+import 'package:losser_bar/Pages/qr_reserve_ticket.dart';
+import 'package:losser_bar/Pages/test2.dart';
 import 'package:losser_bar/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'Pages/donation_page.dart';
@@ -47,7 +49,13 @@ void main() async {
         create: (context) => ReserveTableProvider(),
       ),
       ChangeNotifierProvider(
-        create: (context) => ReserveTicketProvider(),
+        create: (context) => TicketcatalogProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => ReservationTicketProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => BillOrderProvider(),
       ),
     ],
     child: const MyApp(),
@@ -62,23 +70,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Losser bar app',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
           colorScheme: ColorScheme(
               brightness: Brightness.light,
-              primary: Colors.blueGrey[700]!,
+              primary: Color(0xFF455A64)!,
               onPrimary: Colors.blueGrey[900]!,
-              secondary: Color(0xFF0077ED),
+              secondary: const Color(0xFF0077ED),
               onSecondary: Colors.teal[800]!,
-              error: Color(0xFFF32424),
-              onError: Color.fromARGB(255, 231, 100, 13),
-              background: Color.fromARGB(255, 231, 230, 230),
-              onBackground: Color(0xFF000000),
-              surface: Color(0xFFFFFFFF),
-              onSurface: Colors.grey[300]!),
-          textTheme: TextTheme(
+              error: const Color(0xFFF32424),
+              onError: const Color.fromARGB(255, 231, 100, 13),
+              background: const Color.fromARGB(255, 231, 230, 230),
+              onBackground: const Color(0xFF000000),
+              surface: Colors.blueGrey[200]!,
+              onSurface: Colors.blueGrey[400]!),
+          textTheme: const TextTheme(
               bodyMedium: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                  fontSize: 18,
+                  color: Colors.black,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold),
               bodySmall: TextStyle(
                   color: Colors.black,
@@ -92,6 +101,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/profile': (context) => ProfilePage(),
         '/home': (context) => Homepage(),
+        '/newhome': (context) => NewHomePage(),
         '/1': (context) => ReserveTablePage(),
         // '/2': (context) => ReserveTicketPage(),
         '/3': (context) => FoodandBeverageScreen(),
@@ -100,10 +110,10 @@ class MyApp extends StatelessWidget {
         '/6': (context) => DonationPage(),
         '/7': (context) => MateCafePage(),
         '/cart': (context) => CartPage(),
-        '/allreceipt': (context) => AllReceiptPage(),
-        '/orderreceipt': (context) => ReceiptOrderPage(),
+        '/allreceipt': (context) => OrderHistoryPage(),
         '/payment': (context) => PaymentScreen(),
-        '/qrtable': (context) => QrReservations(),
+        '/qrtable': (context) => const QrReservations(),
+        '/qrticket': (context) => const QrReservationTickets(),
       },
     );
   }

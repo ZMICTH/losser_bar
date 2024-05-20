@@ -8,6 +8,7 @@ class FoodAndBeverageProduct {
   late String item;
   late String unit;
   String type;
+  late int quantity;
 
   FoodAndBeverageProduct(
     this.nameFoodBeverage,
@@ -16,6 +17,7 @@ class FoodAndBeverageProduct {
     this.item,
     this.unit,
     this.type,
+    this.quantity,
   );
   factory FoodAndBeverageProduct.fromJson(Map<String, dynamic> json) {
     print("FoodAndBeverageProduct.fromJson");
@@ -27,6 +29,7 @@ class FoodAndBeverageProduct {
       json['item'] as String,
       json['unit'] as String,
       json['type'] as String,
+      json['quantity'] as int,
     );
   }
 
@@ -39,6 +42,7 @@ class FoodAndBeverageProduct {
       'item': item,
       'unit': unit,
       'type': type,
+      'quantity': quantity,
     };
   }
 }

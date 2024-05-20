@@ -23,21 +23,6 @@ class _FoodandBeverageScreenState extends State<FoodandBeverageScreen> {
     _loadFoodAndBeverageProducts();
   }
 
-  // Future<void> _loadPromotionProducts() async {
-  //   try {
-  //     var promotionproducts =
-  //         await foodandbeveragecontroller.fetchFoodAndBeverageProduct();
-  //     Provider.of<ProductModel>(context, listen: false)
-  //         .setFoodAndBeverageProducts(promotionproducts);
-  //   } catch (e) {
-  //     print('Error fetching promotion products: $e');
-  //   } finally {
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-
   Future<void> _loadFoodAndBeverageProducts() async {
     try {
       var foodProducts =
@@ -158,63 +143,73 @@ class _FoodandBeverageScreenState extends State<FoodandBeverageScreen> {
       itemCount: promotionModel.promotions.length,
       itemBuilder: (context, index) {
         final promotionProduct = promotionModel.promotions[index];
-        return Card(
-          elevation: 4, // Build your card with promotionProduct data
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    promotionProduct.foodbeverageimagePath,
-                    fit: BoxFit.cover,
-                    width: 90,
-                    height: 100,
+        bool isAvailable = promotionProduct.quantity > 0;
+        return Opacity(
+          opacity: isAvailable ? 1.0 : 0.5,
+          child: Card(
+            elevation: 4, // Build your card with promotionProduct data
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    child: Image.network(
+                      promotionProduct.foodbeverageimagePath,
+                      fit: BoxFit.cover,
+                      width: 90,
+                      height: 100,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${promotionProduct.nameFoodBeverage} ${promotionProduct.item} ${promotionProduct.unit} THB ${promotionProduct.priceFoodBeverage}",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onBackground),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            // Add the product to the bag
-                            final productModel = Provider.of<ProductModel>(
-                                context,
-                                listen: false);
-                            productModel.addToCart(promotionProduct.toMap());
-                          },
-                          child: Text(
-                            'Add To Cart',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                          style: TextButton.styleFrom(
-                              backgroundColor: Colors.blueGrey),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${promotionProduct.nameFoodBeverage} ${promotionProduct.item} ${promotionProduct.unit} THB ${promotionProduct.priceFoodBeverage}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onBackground),
+                      ),
+                      if (!isAvailable)
+                        Text('Item isn\'t available',
+                            style: TextStyle(color: Colors.red)),
+                      if (isAvailable)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                // Add the product to the bag
+                                final productModel = Provider.of<ProductModel>(
+                                    context,
+                                    listen: false);
+                                productModel
+                                    .addToCart(promotionProduct.toMap());
+                              },
+                              child: Text(
+                                'Add To Cart',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14),
+                              ),
+                              style: TextButton.styleFrom(
+                                  backgroundColor: Colors.blueGrey),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -233,64 +228,73 @@ class _FoodandBeverageScreenState extends State<FoodandBeverageScreen> {
       itemCount: foodandbeverageModel.products.length,
       itemBuilder: (context, index) {
         final foodandbeverageProduct = foodandbeverageModel.products[index];
-        return Card(
-          elevation: 10, // Build your card with promotionProduct data
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    foodandbeverageProduct.foodbeverageimagePath,
-                    fit: BoxFit.cover,
-                    width: 90,
-                    height: 100,
+        bool isAvailable = foodandbeverageProduct.quantity > 0;
+        return Opacity(
+          opacity: isAvailable ? 1.0 : 0.5,
+          child: Card(
+            elevation: 10, // Build your card with promotionProduct data
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    child: Image.network(
+                      foodandbeverageProduct.foodbeverageimagePath,
+                      fit: BoxFit.cover,
+                      width: 90,
+                      height: 100,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${foodandbeverageProduct.nameFoodBeverage} ${foodandbeverageProduct.item} ${foodandbeverageProduct.unit} THB ${foodandbeverageProduct.priceFoodBeverage}",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onBackground),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            // Add the product to the bag
-                            final productModel = Provider.of<ProductModel>(
-                                context,
-                                listen: false);
-                            productModel
-                                .addToCart(foodandbeverageProduct.toMap());
-                          },
-                          child: Text(
-                            'Add To Cart',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                          style: TextButton.styleFrom(
-                              backgroundColor: Colors.blueGrey),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${foodandbeverageProduct.nameFoodBeverage} ${foodandbeverageProduct.item} ${foodandbeverageProduct.unit} THB ${foodandbeverageProduct.priceFoodBeverage}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onBackground),
+                      ),
+                      if (!isAvailable)
+                        Text('Item isn\'t available',
+                            style: TextStyle(color: Colors.red)),
+                      if (isAvailable)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                // Add the product to the bag
+                                final productModel = Provider.of<ProductModel>(
+                                    context,
+                                    listen: false);
+                                productModel
+                                    .addToCart(foodandbeverageProduct.toMap());
+                              },
+                              child: Text(
+                                'Add To Cart',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14),
+                              ),
+                              style: TextButton.styleFrom(
+                                  backgroundColor: Colors.blueGrey),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
