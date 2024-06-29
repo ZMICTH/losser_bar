@@ -6,6 +6,11 @@ import 'package:losser_bar/Pages/Model/mate_model.dart';
 import 'package:losser_bar/Pages/Model/payorder_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
+import 'package:losser_bar/Pages/all_qr.dart';
+import 'package:losser_bar/Pages/all_receipt.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
+import 'package:losser_bar/Pages/table_receipt.dart';
+import 'package:losser_bar/Pages/ticket_receipt.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
 import 'package:losser_bar/Pages/Order_receipt.dart';
 import 'package:losser_bar/Pages/cart_page.dart';
@@ -17,8 +22,9 @@ import 'package:losser_bar/Pages/matecafe_page.dart';
 import 'package:losser_bar/Pages/payment_page.dart';
 import 'package:losser_bar/Pages/qr_reserve_table.dart';
 import 'package:losser_bar/Pages/qr_reserve_ticket.dart';
-import 'package:losser_bar/Pages/test2.dart';
+
 import 'package:losser_bar/firebase_options.dart';
+import 'package:losser_bar/newhome.dart';
 import 'package:provider/provider.dart';
 import 'Pages/donation_page.dart';
 import 'Pages/request_song_page.dart';
@@ -56,6 +62,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => BillOrderProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => SelectedPartnerProvider(),
       ),
     ],
     child: const MyApp(),
@@ -96,7 +105,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true),
 
       //register sub class
-      initialRoute: '/home',
+      initialRoute: '/newhome',
       routes: {
         '/login': (context) => LoginScreen(),
         '/profile': (context) => ProfilePage(),
@@ -110,8 +119,12 @@ class MyApp extends StatelessWidget {
         '/6': (context) => DonationPage(),
         '/7': (context) => MateCafePage(),
         '/cart': (context) => CartPage(),
-        '/allreceipt': (context) => OrderHistoryPage(),
+        '/allReceipt': (context) => AllReceiptPage(),
+        '/orderReceipt': (context) => OrderHistoryPage(),
+        '/ticketReceipt': (context) => TicketReceiptPage(),
+        '/tableReceipt': (context) => TableReceiptPage(),
         '/payment': (context) => PaymentScreen(),
+        '/allqr': (context) => AllQRCodePage(),
         '/qrtable': (context) => const QrReservations(),
         '/qrticket': (context) => const QrReservationTickets(),
       },

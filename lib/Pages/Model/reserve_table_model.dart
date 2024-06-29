@@ -2,17 +2,22 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/login_model.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
+import 'package:provider/provider.dart';
 
 class TableCatalog {
   String id = "";
   DateTime onTheDay;
   bool closeDate;
+  String partnerId;
   List<Map<String, dynamic>> tableLables;
 
   TableCatalog({
     this.id = "",
     required this.onTheDay,
     required this.closeDate,
+    required this.partnerId,
     required this.tableLables,
   });
 
@@ -22,6 +27,7 @@ class TableCatalog {
       id: json['id'] as String,
       onTheDay: (json['onTheDay'] as Timestamp).toDate(),
       closeDate: json['closeDate'] as bool,
+      partnerId: json['partnerId'] as String,
       tableLables: (json['tableLables'] as List<dynamic>? ?? [])
           .map<Map<String, dynamic>>((tableLable) {
         return Map<String, dynamic>.from(tableLable as Map);
@@ -35,6 +41,7 @@ class TableCatalog {
       id: snapshot.id, // Correctly assign the document ID
       onTheDay: (json['onTheDay'] as Timestamp).toDate(),
       closeDate: json['closeDate'] as bool,
+      partnerId: json['partnerId'] as String,
       tableLables: (json['tableLables'] as List<dynamic>? ?? [])
           .map<Map<String, dynamic>>((tableLable) {
         return Map<String, dynamic>.from(tableLable as Map);
@@ -104,6 +111,10 @@ class ReserveTableHistory {
   DateTime paymentTime;
   int sharedCount;
   List<String>? sharedWith;
+  String partnerId;
+  String? tableNo;
+  String? roundtable;
+  bool? checkOut;
 
   ReserveTableHistory({
     this.id = "",
@@ -121,6 +132,10 @@ class ReserveTableHistory {
     required this.paymentTime,
     required this.sharedCount,
     required this.sharedWith,
+    required this.partnerId,
+    required this.tableNo,
+    required this.roundtable,
+    required this.checkOut,
   });
 
   factory ReserveTableHistory.fromJson(Map<String, dynamic> json) {
@@ -144,6 +159,10 @@ class ReserveTableHistory {
       sharedWith: json['sharedWith'] != null
           ? List<String>.from(json['sharedWith'] as List)
           : null,
+      partnerId: json['partnerId'] as String,
+      tableNo: json['tableNo'] as String? ?? "",
+      roundtable: json['roundtable'] as String? ?? "",
+      checkOut: json['checkOut'],
     );
   }
 
@@ -168,6 +187,10 @@ class ReserveTableHistory {
       sharedWith: json['sharedWith'] != null
           ? List<String>.from(json['sharedWith'] as List)
           : null,
+      partnerId: json['partnerId'] as String,
+      tableNo: json['tableNo'] as String? ?? "",
+      roundtable: json['roundtable'] as String? ?? "",
+      checkOut: json['checkOut'],
     );
   }
 
@@ -187,6 +210,10 @@ class ReserveTableHistory {
       'paymentTime': paymentTime,
       'sharedCount': sharedCount,
       'sharedWith': sharedWith,
+      'partnerId': partnerId,
+      'tableNo': tableNo,
+      'roundtable': roundtable,
+      'checkOut': checkOut,
     };
   }
 }
@@ -229,6 +256,7 @@ class ReserveTable {
   DateTime formattedSelectedDay;
   String userId;
   String nicknameUser;
+  String partnerId;
   bool checkIn;
   int selectedSeats;
   String userPhone;
@@ -243,6 +271,7 @@ class ReserveTable {
     required this.formattedSelectedDay,
     required this.userId,
     required this.nicknameUser,
+    required this.partnerId,
     required this.checkIn,
     required this.selectedSeats,
     required this.userPhone,
@@ -259,6 +288,7 @@ class ReserveTable {
       'formattedSelectedDay': formattedSelectedDay,
       'userId': userId,
       'nicknameUser': nicknameUser,
+      'partnerId': partnerId,
       'checkIn': checkIn,
       'selectedSeats': selectedSeats,
       'userPhone': userPhone,
@@ -324,8 +354,13 @@ class ReserveTableProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setTables(List<TableCatalog> tables) {
-    _tables = tables;
+  void setTables(List<TableCatalog> tables, String? partnerId) {
+    // Filter tables by partnerId
+    if (partnerId != null) {
+      _tables = tables.where((table) => table.partnerId == partnerId).toList();
+    } else {
+      _tables = tables;
+    }
     _updateInactiveDates();
     notifyListeners();
   }
@@ -389,6 +424,52 @@ class ReserveTableProvider extends ChangeNotifier {
 
   void clearbookingtable() {
     allReserveTable.clear();
+    notifyListeners();
+  }
+
+  // for use in cart
+  void setTableNo(List<ReserveTableHistory> bookingTable) {
+    _allReserveTable = bookingTable;
+    notifyListeners();
+  }
+
+  void setTableNoForUser(String userId) {
+    var filteredList =
+        _allReserveTable.where((ticket) => ticket.userId == userId).toList();
+    _allReserveTable = filteredList;
+    notifyListeners();
+  }
+
+  void filterCheckedInToday(BuildContext context) {
+    DateTime now = DateTime.now();
+    String? selectedPartnerId =
+        Provider.of<SelectedPartnerProvider>(context, listen: false)
+            .selectedPartnerId;
+    String? currentUserId =
+        Provider.of<MemberUserModel>(context, listen: false).memberUser?.id;
+
+    if (selectedPartnerId == null) {
+      // Handle the case when there is no selected partner
+      _allReserveTable = [];
+    } else {
+      var filteredList = _allReserveTable.where((reservation) {
+        bool isUserShared =
+            reservation.sharedWith?.contains(currentUserId) ?? false;
+        bool checkOut =
+            reservation.checkOut ?? false; // Default to false if null
+        return reservation.checkIn &&
+            !checkOut && // Ensure checkOut is false
+            reservation.partnerId == selectedPartnerId &&
+            (reservation.formattedSelectedDay
+                    .isAtSameMomentAs(DateTime(now.year, now.month, now.day)) ||
+                reservation.formattedSelectedDay.isAfter(
+                    DateTime(now.year, now.month, now.day)
+                        .subtract(Duration(days: 1)))) &&
+            (reservation.userId == currentUserId || isUserShared);
+      }).toList();
+      _allReserveTable = filteredList;
+      print("Filtered tables: $filteredList");
+    }
     notifyListeners();
   }
 }

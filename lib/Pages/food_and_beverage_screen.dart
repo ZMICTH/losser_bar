@@ -52,65 +52,65 @@ class _FoodandBeverageScreenState extends State<FoodandBeverageScreen> {
             fontWeight: FontWeight.bold,
             fontSize: 25,
           ),
-          title: const Center(
-            child: Text(
-              'Menu',
-              style: TextStyle(fontSize: 25),
-            ),
+          title: Text(
+            'Menu',
+            style: TextStyle(fontSize: 25),
           ),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          actions: [
-            InkWell(
-              onTap: () {
-                Navigator.pushNamed(context, '/cart');
-              },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(
-                      right: 9,
-                      top: 6,
-                    ),
-                    child: Icon(
-                      Icons.bookmark_add,
-                      // color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                  if (promotionModel.cart.length > 0)
-                    Positioned(
-                      top: 4.0,
-                      right: 4.0,
-                      child: CircleAvatar(
-                        radius: 8.0,
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                        child: Text(
-                          '${promotionModel.cart.length}',
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
+          // actions: [
+          //   InkWell(
+          //     onTap: () {
+          //       Navigator.pushNamed(context, '/cart');
+          //     },
+          //     child: Stack(
+          //       alignment: Alignment.center,
+          //       children: [
+          //         const Padding(
+          //           padding: EdgeInsets.only(
+          //             right: 9,
+          //             top: 6,
+          //           ),
+          //           child: Icon(
+          //             Icons.bookmark_add,
+          //             // color: Theme.of(context).colorScheme.onPrimary,
+          //           ),
+          //         ),
+          //         if (promotionModel.cart.length > 0)
+          //           Positioned(
+          //             top: 4.0,
+          //             right: 4.0,
+          //             child: CircleAvatar(
+          //               radius: 8.0,
+          //               backgroundColor:
+          //                   Theme.of(context).colorScheme.secondary,
+          //               child: Text(
+          //                 '${promotionModel.cart.length}',
+          //                 style: const TextStyle(
+          //                   fontSize: 12.0,
+          //                   color: Colors.white,
+          //                   fontWeight: FontWeight.bold,
+          //                 ),
+          //               ),
+          //             ),
+          //           ),
+          //       ],
+          //     ),
+          //   ),
+          //   const SizedBox(width: 10),
+          // ],
           bottom: const TabBar(
             tabs: <Widget>[
               Tab(
                 icon: Icon(
                   Icons.sell,
+                  color: Colors.white,
                   size: 30,
                 ),
               ),
               Tab(
                 icon: Icon(
                   Icons.fastfood,
+                  color: Colors.white,
                   size: 30,
                 ),
               ),

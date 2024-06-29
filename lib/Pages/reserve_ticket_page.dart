@@ -6,6 +6,7 @@ import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/controllers/reserve_table_controller.dart';
 import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
 import 'package:losser_bar/Pages/services/reserve_table_service.dart';
 import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
@@ -41,13 +42,6 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
 
   bool _isLoading = true;
 
-  List<TableCatalog> _tables = [];
-  String? _selectedTableLabel;
-  int? _selectedTablePrice;
-  double _totalPrice = 0.0;
-  int _ticketQuantity = 1; // Default to 1
-  int? _selectedTableSeats; // Track the number of seats for the selected label
-
   @override
   void initState() {
     super.initState();
@@ -65,11 +59,6 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
       // Fetch tables from Firebase
       List<TableCatalog> allTables =
           await reservetablehistorycontroller.fetchTableCatalog();
-      // Filter tables to only include those on the event date
-      _tables = allTables
-          .where((table) => table.onTheDay.isAtSameMomentAs(widget.eventDate))
-          .toList();
-
       // Set the fetched tables into the provider
       Provider.of<ReservationTicketProvider>(context, listen: false)
           .setTables(allTables);
@@ -81,8 +70,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
   }
 
   void _updateTotalPrice() {
-    _totalPrice =
-        (_selectedTablePrice ?? 0) + (widget.ticketPrice * _ticketQuantity);
+    final provider =
+        Provider.of<ReservationTicketProvider>(context, listen: false);
+    provider.totalPrice = (provider.selectedTablePrice ?? 0) +
+        (widget.ticketPrice * provider.ticketQuantity);
   }
 
   @override
@@ -104,10 +95,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
     final String formattedEventDate =
         DateFormat('EEEE, MMMM d, yyyy').format(widget.eventDate);
 
-    List<TableCatalog> tables =
-        Provider.of<ReservationTicketProvider>(context).tables;
+    final provider = Provider.of<ReservationTicketProvider>(context);
     List<Map<String, dynamic>> allLabels =
-        tables.expand((table) => table.tableLables).toList();
+        provider.tables.expand((table) => table.tableLables).toList();
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -148,7 +139,6 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
               indent: 10,
             ),
             SizedBox(height: 5),
-
             Text(
               "${formattedEventDate}",
               style: TextStyle(color: Colors.blueGrey[900], fontSize: 20),
@@ -188,17 +178,20 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                 itemCount: allLabels.length,
                 itemBuilder: (context, index) {
                   var label = allLabels[index];
-                  bool isSelected = _selectedTableLabel == label['label'];
+                  bool isSelected =
+                      provider.selectedTableLabel == label['label'];
                   bool isAvailable = label['totaloftable'] > 0;
                   return InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedTableLabel = label['label'];
-                        _selectedTablePrice = label['tablePrices'];
-                        _selectedTableSeats = label['seats'];
-                        _updateTotalPrice();
-                      });
-                    },
+                    onTap: isAvailable
+                        ? () {
+                            provider.setSelectedTable(provider.tables
+                                .firstWhere((table) => table.tableLables
+                                    .any((l) => l['label'] == label['label'])));
+                            provider.setSelectedTableLabel(label['label'],
+                                label['tablePrices'], label['seats']);
+                            _updateTotalPrice();
+                          }
+                        : null,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
@@ -222,11 +215,11 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                             '${label['label']} - ${label['tablePrices']} THB',
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.grey,
-                              fontSize: 18,
+                              fontSize: 16,
                             ),
                           ),
                           Text(
-                            'Available Tables: ${label['totaloftable']}',
+                            'Available: ${label['totaloftable']}',
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.grey,
                             ),
@@ -250,20 +243,17 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                     size: 30,
                   ),
                   onPressed: () {
-                    if (_ticketQuantity > 1) {
-                      // Prevent going below 1
-                      setState(() {
-                        _ticketQuantity--;
-                        _updateTotalPrice();
-                      });
+                    if (provider.ticketQuantity > 1) {
+                      provider.decrementTicketQuantity();
+                      _updateTotalPrice();
                     }
                   },
                 ),
                 Text(
-                  "$_ticketQuantity",
+                  "${provider.ticketQuantity}",
                   style: const TextStyle(
-                    color: Colors.black, // Set text color to black
-                    fontSize: 25, // Set font size to 20
+                    color: Colors.black,
+                    fontSize: 25,
                   ),
                 ),
                 IconButton(
@@ -272,22 +262,17 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                     color: Colors.black,
                     size: 30,
                   ),
-                  onPressed: _ticketQuantity < (_selectedTableSeats ?? 0)
+                  onPressed: provider.ticketQuantity <
+                          (provider.selectedTableSeats ?? 0)
                       ? () {
-                          setState(
-                            () {
-                              _ticketQuantity++;
-                              _updateTotalPrice();
-                            },
-                          );
+                          provider.incrementTicketQuantity();
+                          _updateTotalPrice();
                         }
                       : null,
                 ),
               ],
             ),
-
-            // GridView.builder and other UI elements...
-            if (_selectedTablePrice != null)
+            if (provider.selectedTablePrice != null)
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: Container(
@@ -304,10 +289,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                           Text('Total Price',
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
-                          Text('THB ${_totalPrice.toStringAsFixed(2)}',
+                          Text('THB ${provider.totalPrice.toStringAsFixed(2)}',
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
-                          Text('Total Ticket: $_ticketQuantity',
+                          Text('Total Ticket: ${provider.ticketQuantity}',
                               style: const TextStyle(color: Colors.white)),
                         ],
                       ),
@@ -332,7 +317,8 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
   }
 
   void _confirmReserving() async {
-    // Assuming the existence of a user model and a way to get the current user's ID and nickname
+    final provider =
+        Provider.of<ReservationTicketProvider>(context, listen: false);
     final userId =
         Provider.of<MemberUserModel>(context, listen: false).memberUser?.id ??
             'defaultUserId';
@@ -341,9 +327,13 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
             ?.nicknameUser ??
         'defaultNickname';
 
-    final docRef = FirebaseFirestore.instance
+    final ticketDocRef = FirebaseFirestore.instance
         .collection('ticket_concert_catalog')
         .doc(widget.ticketId);
+
+    final tableDocRef = FirebaseFirestore.instance
+        .collection('table_catalog')
+        .doc(provider.selectedTableId);
 
     showDialog(
       context: context,
@@ -354,10 +344,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
           title: Text('Confirm Reserving'),
           content: QRCodeGenerate(
             promptPayId: "0987487348",
-            amount: _totalPrice,
+            amount: provider.totalPrice,
             isShowAmountDetail: true,
             promptPayDetailCustom: Text("สิทธิวิชญ์ พิสิฐภูวโภคิน"),
-            amountDetailCustom: Text('${_totalPrice} THB'),
+            amountDetailCustom: Text('${provider.totalPrice} THB'),
             width: 400,
             height: 400,
           ),
@@ -369,28 +359,69 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
             TextButton(
               child: const Text('Confirm'),
               onPressed: () async {
-                Navigator.of(context)
-                    .pop(); // Close the dialog immediately on confirm
+                Navigator.of(context).pop();
                 try {
-                  FirebaseFirestore.instance
+                  await FirebaseFirestore.instance
                       .runTransaction((transaction) async {
-                    // Get the current document
-                    DocumentSnapshot snapshot = await transaction.get(docRef);
-
-                    if (!snapshot.exists) {
+                    // Read the current ticket document
+                    DocumentSnapshot ticketSnapshot =
+                        await transaction.get(ticketDocRef);
+                    if (!ticketSnapshot.exists) {
                       throw Exception("Concert ticket does not exist!");
                     }
 
+                    // Read the current table document
+                    DocumentSnapshot tableSnapshot =
+                        await transaction.get(tableDocRef);
+                    if (!tableSnapshot.exists) {
+                      throw Exception('Table data not available');
+                    }
+
                     // Calculate the new number of tickets
-                    int currentTickets = snapshot.get('numberOfTickets');
-                    if (currentTickets < _ticketQuantity) {
+                    int currentTickets = ticketSnapshot.get('numberOfTickets');
+                    if (currentTickets < provider.ticketQuantity) {
                       throw Exception("Not enough tickets available!");
                     }
-                    int updatedTickets = currentTickets - _ticketQuantity;
+                    int updatedTickets =
+                        currentTickets - provider.ticketQuantity;
 
-                    // Update the document
+                    // Update the ticket document
+                    transaction.update(
+                        ticketDocRef, {'numberOfTickets': updatedTickets});
+
+                    Map<String, dynamic> data =
+                        tableSnapshot.data() as Map<String, dynamic>;
+                    List<dynamic> tableLabels = data['tableLables'];
+                    List<Map<String, dynamic>> updatedLabels = [];
+                    for (var label in tableLabels) {
+                      Map<String, dynamic> currentLabel =
+                          Map<String, dynamic>.from(label);
+
+                      if (currentLabel['label'] ==
+                          provider.selectedTableLabel) {
+                        int newTotalOfTable =
+                            (currentLabel['totaloftable'] as int) - 1;
+
+                        updatedLabels.add({
+                          'label': currentLabel['label'],
+                          'numberofchairs': currentLabel['numberofchairs'],
+                          'seats': currentLabel['seats'],
+                          'tablePrices': currentLabel['tablePrices'],
+                          'totaloftable': newTotalOfTable,
+                        });
+                      } else {
+                        updatedLabels.add(currentLabel);
+                      }
+                    }
+
+                    // Update the table document
                     transaction
-                        .update(docRef, {'numberOfTickets': updatedTickets});
+                        .update(tableDocRef, {'tableLables': updatedLabels});
+
+                    final partnerId = Provider.of<SelectedPartnerProvider>(
+                            context,
+                            listen: false)
+                        .selectedPartnerId;
 
                     // Proceed to create the reservation
                     final newReservation = BookingTicket(
@@ -398,16 +429,18 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                       ticketId: widget.ticketId,
                       nicknameUser: userNickName,
                       eventName: widget.eventName,
-                      selectedTableLabel: _selectedTableLabel!,
+                      selectedTableLabel: provider.selectedTableLabel!,
                       eventDate: widget.eventDate,
-                      totalPayment: _totalPrice,
-                      ticketQuantity: _ticketQuantity,
+                      partnerId: partnerId!,
+                      totalPayment: provider.totalPrice,
+                      ticketQuantity: provider.ticketQuantity,
                       paymentTime: DateTime.now(),
                       payable: true,
                       checkIn: false,
                       sharedCount: 0,
                       sharedWith: [],
                     );
+                    print(newReservation);
 
                     // Assuming you have a method to add the reservation in your controller
                     await ticketconcertcontroller

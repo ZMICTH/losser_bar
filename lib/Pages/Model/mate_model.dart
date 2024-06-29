@@ -97,14 +97,14 @@ class BillBookingMate {
   Map<String, dynamic> bookingMate;
   String userId;
   String nicknameUser;
-  DateTime billingtime;
+  DateTime billingTime;
 
   BillBookingMate({
     required this.tableNo,
     required this.bookingMate,
     required this.userId,
     required this.nicknameUser,
-    required this.billingtime,
+    required this.billingTime,
   });
 
   Map<String, dynamic> toMap() {
@@ -113,7 +113,7 @@ class BillBookingMate {
       'bookingDetails': bookingMate,
       'userId': userId,
       'nicknameUser': nicknameUser,
-      'billingTime': billingtime,
+      'billingTime': billingTime,
     };
   }
 }

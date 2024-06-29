@@ -27,7 +27,7 @@ class MateCatalogFirebaseService implements MateCatalogService {
         'bookingDetails': BookingMateCafe.bookingMate,
         'userId': BookingMateCafe.userId,
         'nicknameUser': BookingMateCafe.nicknameUser,
-        'billingTime': BookingMateCafe.billingtime,
+        'billingTime': BookingMateCafe.billingTime,
       });
       print("Bill Booking Mate uploaded successfully");
     } catch (e) {

@@ -42,6 +42,7 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     var detailproductModel = Provider.of<TicketcatalogProvider>(context);
     var ticketconcert = detailproductModel.allTicketConcert;
+    var validTickets = _getValidTickets(ticketconcert);
 
     return Scaffold(
       appBar: AppBar(
@@ -49,9 +50,9 @@ class _HomepageState extends State<Homepage> {
         title: const Text('Losser Bar  '),
         foregroundColor: Theme.of(context).colorScheme.surface,
         titleTextStyle: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.surface),
+          fontSize: 25,
+          fontWeight: FontWeight.bold,
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -60,6 +61,7 @@ class _HomepageState extends State<Homepage> {
             },
             icon: const Icon(Icons.account_circle_sharp),
             iconSize: 40,
+            color: Theme.of(context).colorScheme.background,
           ),
         ],
       ),
@@ -69,12 +71,25 @@ class _HomepageState extends State<Homepage> {
               child: Column(
                 children: [
                   SizedBox(
-                      height: 420, child: _buildTicketListView(ticketconcert)),
-                  _buildGridMenu(),
+                      height: 420, child: _buildTicketListView(validTickets)),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _buildGridMenu(),
+                  ),
                 ],
               ),
             ),
     );
+  }
+
+  List<TicketConcertModel> _getValidTickets(List<TicketConcertModel> tickets) {
+    DateTime now = DateTime.now();
+    return tickets
+        .where((ticket) => ticket.endingSaleDate.isAfter(now))
+        .toList();
   }
 
   Widget _buildTicketListView(List<TicketConcertModel> ticketConcert) {
@@ -106,6 +121,7 @@ class _HomepageState extends State<Homepage> {
                           eventImage: ticket.imageEvent,
                           ticketPrice: ticket.ticketPrice,
                           ticketId: ticket.id,
+                          numberOfTickets: ticket.numberOfTickets,
                         ),
                       ),
                     );
@@ -144,7 +160,10 @@ class _HomepageState extends State<Homepage> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.blueGrey[100]!.withOpacity(0.8),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.8),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
@@ -249,29 +268,40 @@ class _HomepageState extends State<Homepage> {
       },
       {
         'icon': Icons.fastfood,
-        'label': 'Food and Beverage',
-        'route': '/3',
+        'label': 'Order',
+        'route': '/cart',
       },
       {
-        'icon': Icons.account_box_rounded,
-        'label': 'Your IG',
-        'route': '/5',
+        'icon': Icons.fastfood,
+        'label': 'Payment Order',
+        'route': '/payment',
       },
-      {
-        'icon': Icons.cleaning_services,
-        'label': 'Mate Cafe',
-        'route': '/7',
-      },
-      {
-        'icon': Icons.receipt_long_outlined,
-        'label': 'Order Receipt',
-        'route': '/allreceipt',
-      },
-      {
-        'icon': Icons.receipt_long_outlined,
-        'label': 'QR Ticket concert',
-        'route': '/qrticket',
-      },
+      // {
+      //   'icon': Icons.fastfood,
+      //   'label': 'Food and Beverage',
+      //   'route': '/3',
+      // },
+
+      // {
+      //   'icon': Icons.cleaning_services,
+      //   'label': 'Mate Cafe',
+      //   'route': '/7',
+      // },
+      // {
+      //   'icon': Icons.receipt_long_outlined,
+      //   'label': 'Order Receipt',
+      //   'route': '/orderReceipt',
+      // },
+      // {
+      //   'icon': Icons.receipt_long_outlined,
+      //   'label': 'QR Ticket concert',
+      //   'route': '/qrticket',
+      // },
+      // {
+      //   'icon': Icons.receipt_long_outlined,
+      //   'label': 'QR Table',
+      //   'route': '/qrtable',
+      // },
     ];
 
     return GridView.builder(
@@ -305,6 +335,10 @@ class _HomepageState extends State<Homepage> {
                 Text(
                   item['label'],
                   textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey[100],
+                    fontSize: 18,
+                  ),
                 ),
               ],
             ),

@@ -78,6 +78,11 @@ class _QrReservationsState extends State<QrReservations> {
     List<ReserveTableHistory>? reservations =
         reserveTableProvider.allReserveTable;
 
+    // Sort the reservations by formattedSelectedDay
+    var sortedReservations = reserveTableProvider.allReserveTable;
+    sortedReservations.sort(
+        (b, a) => a.formattedSelectedDay.compareTo(b.formattedSelectedDay));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -107,20 +112,20 @@ class _QrReservationsState extends State<QrReservations> {
                     } else {
                       Map<String, dynamic> reservationDetails = {
                         'id': reservation.id,
-                        'userId': reservation.userId,
-                        'name': reservation.nicknameUser,
-                        'userPhone': reservation.userPhone,
-                        'selectedTableLabel': reservation.selectedTableLabel,
-                        'selectedSeats': reservation.selectedSeats,
-                        'selectedDay':
-                            reservation.formattedSelectedDay.toIso8601String(),
-                        'checkIn': reservation.checkIn,
-                        'payable': reservation.payable,
-                        'totalPrices': reservation.totalPrices,
-                        'paymentTime':
-                            reservation.paymentTime.toIso8601String(),
-                        'sharedCount': reservation.sharedCount,
-                        'sharedWith': reservation.sharedWith,
+                        // 'userId': reservation.userId,
+                        // 'name': reservation.nicknameUser,
+                        // 'userPhone': reservation.userPhone,
+                        // 'selectedTableLabel': reservation.selectedTableLabel,
+                        // 'selectedSeats': reservation.selectedSeats,
+                        // 'selectedDay':
+                        //     reservation.formattedSelectedDay.toIso8601String(),
+                        // 'checkIn': reservation.checkIn,
+                        // 'payable': reservation.payable,
+                        // 'totalPrices': reservation.totalPrices,
+                        // 'paymentTime':
+                        //     reservation.paymentTime.toIso8601String(),
+                        // 'sharedCount': reservation.sharedCount,
+                        // 'sharedWith': reservation.sharedWith,
                       };
                       String reservationDetailsString =
                           jsonEncode(reservationDetails);
@@ -144,12 +149,19 @@ class _QrReservationsState extends State<QrReservations> {
                         color: Colors.black,
                       ),
                       title: Text(
-                        '${reservation.selectedTableLabel} Table',
+                        '${reservation.selectedTableLabel} - ${reservation.selectedSeats} seats',
                         style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
                       ),
+                      subtitle: reservation.userId !=
+                              FirebaseAuth.instance.currentUser?.uid
+                          ? Text('Share from ${reservation.nicknameUser}',
+                              style: TextStyle(
+                                color: Colors.black54,
+                              ))
+                          : null,
                       trailing: Text(
                         formatSelectedDay,
                         style: TextStyle(

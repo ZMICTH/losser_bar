@@ -4,7 +4,7 @@ import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
 
 class BillHistoryController {
-  // List<BillOrder> BillOrders = List.empty();
+  List<OrderHistories> OrderHistory = List.empty();
   final BillHistoryService service;
 
   StreamController<bool> onSyncController = StreamController<bool>();
@@ -17,16 +17,11 @@ class BillHistoryController {
     onSyncController.add(false);
   }
 
-  Future<List<BillOrder>> fetchBillOrder() async {
+  Future<List<OrderHistories>> fetchBillOrder() async {
+    print("fetchBillOrder was: ${OrderHistory}");
     onSyncController.add(true);
-    try {
-      List<BillOrder> billOrders = await service.getAllBillOrders();
-      onSyncController.add(false);
-      return billOrders;
-    } catch (e) {
-      onSyncController.add(false);
-      print("Failed to fetch bill orders: $e");
-      return []; // Return an empty list on error or handle appropriately
-    }
+    OrderHistory = await service.getAllBillOrders();
+    onSyncController.add(false);
+    return OrderHistory;
   }
 }

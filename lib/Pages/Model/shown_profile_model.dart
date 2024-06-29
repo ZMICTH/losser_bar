@@ -13,7 +13,7 @@ class FormData {
   FormData({
     required this.igusername,
     required this.phrase,
-    // required this.package,
+    required this.package,
     required this.image,
   });
 }
@@ -23,6 +23,7 @@ class ShownProfileController extends GetxController {
     igusername: '',
     phrase: '',
     image: null,
+    package: {},
   );
 
   @override

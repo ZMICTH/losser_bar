@@ -79,6 +79,10 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
     List<BookingTicket>? reservations =
         reserveTicketProvider.allReservationTicket;
 
+    // Sort the reservations by formattedSelectedDay
+    var sortedReservations = reserveTicketProvider.allReservationTicket;
+    sortedReservations.sort((b, a) => a.eventDate.compareTo(b.eventDate));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -109,19 +113,19 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
                         } else {
                           Map<String, dynamic> reservationDetails = {
                             'id': bookingTicket.reserveticketId,
-                            'userId': bookingTicket.userId,
-                            'name': bookingTicket.nicknameUser,
-                            'eventName': bookingTicket.eventName,
-                            'selectedTableLabel':
-                                bookingTicket.selectedTableLabel,
-                            'ticketId': bookingTicket.ticketId,
-                            'eventDate':
-                                bookingTicket.eventDate.toIso8601String(),
-                            'ticketQuantity': bookingTicket.ticketQuantity,
-                            'payable': bookingTicket.payable,
-                            'checkIn': bookingTicket.checkIn,
-                            'sharedCount': bookingTicket.sharedCount,
-                            'sharedWith': bookingTicket.sharedWith,
+                            // 'userId': bookingTicket.userId,
+                            // 'name': bookingTicket.nicknameUser,
+                            // 'eventName': bookingTicket.eventName,
+                            // 'selectedTableLabel':
+                            //     bookingTicket.selectedTableLabel,
+                            // 'ticketId': bookingTicket.ticketId,
+                            // 'eventDate':
+                            //     bookingTicket.eventDate.toIso8601String(),
+                            // 'ticketQuantity': bookingTicket.ticketQuantity,
+                            // 'payable': bookingTicket.payable,
+                            // 'checkIn': bookingTicket.checkIn,
+                            // 'sharedCount': bookingTicket.sharedCount,
+                            // 'sharedWith': bookingTicket.sharedWith,
                           };
                           // Convert the reservation details to a JSON string
                           String reservationDetailsString =
@@ -147,12 +151,19 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
                             color: Colors.black,
                           ),
                           title: Text(
-                            '${bookingTicket.eventName}',
+                            '${bookingTicket.eventName} - ${bookingTicket.selectedTableLabel}',
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black),
                           ),
+                          subtitle: bookingTicket.userId !=
+                                  FirebaseAuth.instance.currentUser?.uid
+                              ? Text('Share from ${bookingTicket.nicknameUser}',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                  ))
+                              : null,
                           trailing: Text(
                             formattedDate,
                             style: TextStyle(

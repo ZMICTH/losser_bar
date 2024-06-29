@@ -90,8 +90,9 @@ class BookingTicket {
   bool payable;
   bool checkIn;
   DateTime paymentTime;
-  int sharedCount;
+  int? sharedCount;
   List<String>? sharedWith;
+  String partnerId;
 
   BookingTicket({
     required this.userId,
@@ -104,6 +105,7 @@ class BookingTicket {
     required this.ticketQuantity,
     required this.payable,
     required this.checkIn,
+    required this.partnerId,
     required this.paymentTime,
     required this.sharedCount,
     required this.sharedWith,
@@ -122,6 +124,7 @@ class BookingTicket {
       ticketQuantity: json['ticketQuantity'] as int,
       payable: json['payable'] as bool,
       checkIn: json['checkIn'] as bool,
+      partnerId: json['partnerId'] as String,
       paymentTime: (json['eventDate'] as Timestamp).toDate(),
       sharedCount: json['sharedCount'] as int? ?? 0,
       sharedWith: json['sharedWith'] != null
@@ -142,6 +145,7 @@ class BookingTicket {
       'ticketQuantity': ticketQuantity,
       'payable': payable,
       'checkIn': checkIn,
+      'partnerId': partnerId,
       'paymentTime': paymentTime,
       'sharedCount': sharedCount,
       'sharedWith': sharedWith,
@@ -201,13 +205,29 @@ class ReservationTicketProvider extends ChangeNotifier {
   List<BookingTicket> _allReservationTicket = [];
   List<TableCatalog> _tables = [];
   DateTime? _eventDate;
+  int _quantityTable = 0;
+  String? _selectedTableLabel;
+  int? _selectedTablePrice;
+  double _totalPrice = 0.0;
+  int _ticketQuantity = 1;
+  int _selectedTableSeats = 0;
+  TableCatalog? _selectedTable;
+  String? _selectedTableId;
 
   List<BookingTicket> get allReservationTicket => _allReservationTicket;
   List<TableCatalog> get tables => _tables;
   DateTime? get eventDate => _eventDate;
+  int get quantityTable => _quantityTable;
+  String? get selectedTableLabel => _selectedTableLabel;
+  int? get selectedTablePrice => _selectedTablePrice;
+  double get totalPrice => _totalPrice;
+  int get ticketQuantity => _ticketQuantity;
+  int get selectedTableSeats => _selectedTableSeats;
+  TableCatalog? get selectedTable => _selectedTable;
+  String? get selectedTableId => _selectedTableId;
 
-  void setAllReservationTicket(List<BookingTicket> reservationtickets) {
-    _allReservationTicket = reservationtickets;
+  void setAllReservationTicket(List<BookingTicket> reservationTickets) {
+    _allReservationTicket = reservationTickets;
     notifyListeners();
   }
 
@@ -227,6 +247,11 @@ class ReservationTicketProvider extends ChangeNotifier {
     }
   }
 
+  set quantityTable(int quantity) {
+    _quantityTable = quantity;
+    notifyListeners();
+  }
+
   void setTables(List<TableCatalog> newTables) {
     _tables = newTables;
     filterTablesForDate(_eventDate);
@@ -242,5 +267,58 @@ class ReservationTicketProvider extends ChangeNotifier {
               table.onTheDay.day == date.day)
           .toList();
     }
+  }
+
+  void setSelectedTable(TableCatalog? table) {
+    _selectedTable = table;
+    if (table != null) {
+      _selectedTableId = table.id;
+      print(_selectedTable);
+      print(_selectedTableId);
+    } else {
+      _selectedTableId = null;
+    }
+    print(_selectedTable);
+    notifyListeners();
+  }
+
+  void setSelectedTableLabel(String? label, int? price, int seats) {
+    _selectedTableLabel = label;
+    _selectedTablePrice = price;
+    _selectedTableSeats = seats;
+    print(_selectedTableLabel);
+    print(_selectedTablePrice);
+    print(_selectedTableSeats);
+    notifyListeners();
+  }
+
+  void incrementTicketQuantity() {
+    if (_ticketQuantity < _selectedTableSeats) {
+      _ticketQuantity++;
+      notifyListeners();
+    }
+  }
+
+  void decrementTicketQuantity() {
+    if (_ticketQuantity > 1) {
+      _ticketQuantity--;
+      notifyListeners();
+    }
+  }
+
+  set totalPrice(double price) {
+    _totalPrice = price;
+    print(_totalPrice);
+    notifyListeners();
+  }
+
+  void clearBookingTable() {
+    _allReservationTicket.clear();
+    notifyListeners();
+  }
+
+  bool isEventDate(DateTime date) {
+    return _allReservationTicket
+        .any((ticket) => ticket.eventDate.isAtSameMomentAs(date));
   }
 }

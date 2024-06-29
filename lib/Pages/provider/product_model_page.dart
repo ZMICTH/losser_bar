@@ -25,7 +25,7 @@ class ProductModel extends ChangeNotifier {
 
   void _filterProductsAndPromotions() {
     _products = _foodAndBeverageProducts
-        .where((product) => product.type == 'product')
+        .where((product) => product.type == 'normal')
         .toList();
     _promotions = _foodAndBeverageProducts
         .where((product) => product.type == 'promotion')
@@ -59,8 +59,15 @@ class ProductModel extends ChangeNotifier {
 
     // If the product is found in the cart, increase its quantity
     if (productIndex != -1) {
-      _cart[productIndex]['quantity'] =
-          (_cart[productIndex]['quantity'] ?? 0) + 1;
+      int currentQuantity = _cart[productIndex]['quantity'] ?? 0;
+
+      // Check if the current quantity is less than 10 before increasing
+      if (currentQuantity < 10) {
+        _cart[productIndex]['quantity'] = currentQuantity + 1;
+      } else {
+        // For example, using a snackbar or a dialog:
+        print('Cannot increase quantity. Maximum of 10 items allowed.');
+      }
     }
 
     notifyListeners();
@@ -86,24 +93,25 @@ class ProductModel extends ChangeNotifier {
   }
 
   double getTotalPrice() {
-    double totalPrice = 0;
-
-    for (var item in _cart) {
-      // Assuming both product types use 'price' as their key for price
-      double itemPrice = (item['price'] ?? 0).toDouble();
-      int itemQuantity = item['quantity'] ?? 1;
-      totalPrice += itemPrice * itemQuantity;
-    }
-
-    return totalPrice;
+    return _cart.fold(0.0,
+        (total, current) => total + (current['price'] * current['quantity']));
   }
 
-  int _getTotalQuantity(List<Map<String, dynamic>> cart) {
-    int totalQuantity = 0;
-    for (var product in cart) {
-      totalQuantity += (product['quantity'] as num ?? 0).toInt();
+  double getTotalPricebyItem() {
+    double totalItemPrice = 0.0;
+    for (var item in _cart) {
+      double itemPrice =
+          item['price'] as double; // Make sure price is treated as double
+      int itemQuantity =
+          item['quantity'] as int; // Ensure quantity is treated as int
+      totalItemPrice += itemPrice *
+          itemQuantity; // Calculate total for each item and add to totalPrice
     }
-    return totalQuantity;
+    return totalItemPrice;
+  }
+
+  double getTotalQuantity() {
+    return _cart.fold(0, (total, current) => total + current['quantity']);
   }
 
   void clearproduct() {

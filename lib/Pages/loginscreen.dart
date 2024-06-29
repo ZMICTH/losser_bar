@@ -6,6 +6,7 @@ import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Profile.dart';
 import 'package:losser_bar/Pages/controllers/login_controller.dart';
 import 'package:losser_bar/Pages/services/login_service.dart';
+import 'package:losser_bar/newhome.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,6 +43,14 @@ class _LoginPageState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(
+                height: 8.0,
+              ),
+              Image.asset(
+                'images/logo.png',
+                width: 150,
+                height: 200,
+              ),
               SizedBox(
                 height: 8.0,
               ),
@@ -122,7 +131,13 @@ class _LoginPageState extends State<LoginScreen> {
                                 );
                                 // _formKey.currentState!.reset();
                                 // ignore: use_build_context_synchronously
-                                Navigator.of(context).pop();
+                                Navigator.pop(context);
+
+                                // Navigator.pushReplacement(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => NewHomePage()),
+                                // );
 
                                 // Get the User object
                                 User? user = userCredential.user;
@@ -179,15 +194,15 @@ class _LoginPageState extends State<LoginScreen> {
                           child: Text('LOGIN'),
                         ),
                       ),
-                      Flexible(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            print('logout is call 1');
-                            FirebaseAuth.instance.signOut();
-                          },
-                          child: Text('Logout'),
-                        ),
-                      ),
+                      // Flexible(
+                      //   child: ElevatedButton(
+                      //     onPressed: () {
+                      //       print('logout is call 1');
+                      //       FirebaseAuth.instance.signOut();
+                      //     },
+                      //     child: Text('Logout'),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ],

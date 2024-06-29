@@ -398,7 +398,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     bookingMate: bookingDetails,
                     userId: userId,
                     nicknameUser: userNickName,
-                    billingtime: DateTime.now(),
+                    billingTime: DateTime.now(),
                   );
 
                   await widget.mateCatalogController

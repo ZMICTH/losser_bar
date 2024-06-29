@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
+import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/controllers/reserve_table_controller.dart';
+import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
 import 'package:losser_bar/Pages/services/reserve_table_service.dart';
+import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
 import 'package:promptpay_qrcode_generate/promptpay_qrcode_generate.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +21,8 @@ class ReserveTablePage extends StatefulWidget {
 class _ReserveTablePageState extends State<ReserveTablePage> {
   late ReserveTableHistoryController reservetablehistorycontroller =
       ReserveTableHistoryController(ReserveTableFirebaseService());
+  late TicketConcertController ticketconcertcontroller =
+      TicketConcertController(TicketConcertFirebaseService());
   bool isLoading = true;
 
   DateTime? selectedDay;
@@ -39,19 +45,46 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
     reservetablehistorycontroller =
         ReserveTableHistoryController(ReserveTableFirebaseService());
     _loadTableCatalog();
+    _loadTicketCatalogs();
   }
 
   void _loadTableCatalog() async {
     try {
-      // Fetch tables from Firebase
-      tableCatalogs = await reservetablehistorycontroller.fetchTableCatalog();
-      // Set the fetched tables into the provider
+      // Get the selected partner ID from the provider
+      String? partnerId =
+          Provider.of<SelectedPartnerProvider>(context, listen: false)
+              .selectedPartnerId;
+
+      if (partnerId == null) {
+        throw Exception('Partner ID is not selected');
+      }
+
+      // Fetch tables from Firebase using the selected partner ID
+      List<TableCatalog> tableCatalogs =
+          await reservetablehistorycontroller.fetchTableCatalog();
+
+      // Set the fetched tables into the provider with filtering by partnerId
       Provider.of<ReserveTableProvider>(context, listen: false)
-          .setTables(tableCatalogs);
+          .setTables(tableCatalogs, partnerId);
+
       setState(() => isLoading = false);
     } catch (e) {
       setState(() => isLoading = false);
       print('Error loading data: $e');
+    }
+  }
+
+  Future<void> _loadTicketCatalogs() async {
+    setState(() => isLoading = true); // Ensure loading state is true
+    try {
+      var tickets = await ticketconcertcontroller.fetchTicketConcertModel();
+      Provider.of<TicketcatalogProvider>(context, listen: false)
+          .setReserveTicket(
+              tickets); // Adjust this based on your actual implementation
+    } catch (e) {
+      print('Error fetching TicketCatalog: $e');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -62,6 +95,39 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
     }
   }
 
+  void _checkForEvent(DateTime date) {
+    final ticketProvider =
+        Provider.of<TicketcatalogProvider>(context, listen: false);
+    final eventsOnDate = ticketProvider.allTicketConcert
+        .where((ticket) => ticket.eventDate.isAtSameMomentAs(date))
+        .toList();
+    print(eventsOnDate);
+
+    if (eventsOnDate.isNotEmpty) {
+      _showEventAlertDialog();
+    }
+  }
+
+  void _showEventAlertDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Concert Ticket Sale'),
+          content: Text('There is a concert ticket sale on this day.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int quantity = Provider.of<ReserveTableProvider>(context).seatQuantity;
@@ -70,15 +136,6 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
         title: Text('Reserve Table'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/qrtable');
-            },
-            icon: Icon(Icons.add_alert),
-            color: Theme.of(context).colorScheme.surface,
-          ),
-        ],
       ),
       body: Builder(builder: (context) {
         return Column(
@@ -95,24 +152,22 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
             ),
             Padding(
               padding: const EdgeInsets.all(2.0),
-              child: DatePicker(
-                DateTime.now(),
-                height: 100,
-                width: 80,
-                dayTextStyle: TextStyle(fontSize: 16),
-                initialSelectedDate: DateTime.now(),
-                selectionColor: Colors.blueGrey,
-                selectedTextColor: Colors.white,
-                inactiveDates:
-                    Provider.of<ReserveTableProvider>(context, listen: true)
-                        .inactiveDates,
-                onDateChange: (date) {
-                  selectedDay =
-                      Provider.of<ReserveTableProvider>(context, listen: false)
-                          .selectedDate = date;
-                  print(date);
-                },
-              ),
+              child: DatePicker(DateTime.now(),
+                  height: 100,
+                  width: 80,
+                  dayTextStyle: TextStyle(fontSize: 16),
+                  initialSelectedDate: DateTime.now(),
+                  selectionColor: Colors.blueGrey,
+                  selectedTextColor: Colors.white,
+                  inactiveDates:
+                      Provider.of<ReserveTableProvider>(context, listen: true)
+                          .inactiveDates, onDateChange: (date) {
+                selectedDay =
+                    Provider.of<ReserveTableProvider>(context, listen: false)
+                        .selectedDate = date;
+                _checkForEvent(date);
+                print(date);
+              }),
             ),
             SizedBox(
               height: 10,
@@ -316,6 +371,10 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
         .memberUser!
         .phoneUser;
 
+    final partnerId =
+        Provider.of<SelectedPartnerProvider>(context, listen: false)
+            .selectedPartnerId;
+
     String formatSelectedDay =
         DateFormat('dd/MM/yyyy 20:00:00 a').format(selectedDay!);
 
@@ -327,6 +386,7 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
       formattedSelectedDay: selectedDay!,
       userId: userId,
       nicknameUser: userNickName,
+      partnerId: partnerId!,
       checkIn: checkIn,
       selectedSeats: seatQuantity,
       userPhone: phoneNumber,

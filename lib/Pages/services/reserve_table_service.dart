@@ -34,6 +34,7 @@ class ReserveTableFirebaseService implements ReserveTableHistoryService {
         'nicknameUser': BookingReserveTable.nicknameUser,
         'checkIn': BookingReserveTable.checkIn,
         'selectedSeats': BookingReserveTable.selectedSeats,
+        'partnerId': BookingReserveTable.partnerId,
         'payable': BookingReserveTable.payable,
         'userPhone': BookingReserveTable.userPhone,
         'paymentTime': BookingReserveTable.paymentTime,
