@@ -22,6 +22,7 @@ class BillHistoryFirebaseService implements BillHistoryService {
         'userNickName': billOrder.userNickName,
         'tableNo': billOrder.tableNo,
         'roundtable': billOrder.roundtable,
+        'userId': billOrder.userId,
       });
       print("Bill history uploaded successfully");
     } catch (e) {

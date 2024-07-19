@@ -14,6 +14,7 @@ class BillOrder {
   String userNickName;
   String tableNo;
   String roundtable;
+  String userId;
 
   BillOrder({
     this.id = "",
@@ -26,6 +27,7 @@ class BillOrder {
     required this.userNickName,
     required this.tableNo,
     required this.roundtable,
+    required this.userId,
   });
 
   factory BillOrder.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class BillOrder {
       userNickName: json['userNickName'] as String? ?? "",
       tableNo: json['tableNo'] as String? ?? "",
       roundtable: json['roundtable'] as String? ?? "",
+      userId: json['userId'] as String? ?? "",
     );
   }
 
@@ -62,6 +65,7 @@ class BillOrder {
       userNickName: json['userNickName'],
       tableNo: json['tableNo'] as String,
       roundtable: json['roundtable'] as String,
+      userId: json['userId'] as String,
     );
   }
 
@@ -82,6 +86,7 @@ class BillOrder {
                 'quantity': order['quantity'],
               })
           .toList(),
+      'userId': userId,
       'userNickName': userNickName,
       'partnerId': partnerId,
       'tableNo': tableNo,
@@ -129,6 +134,8 @@ class OrderHistories {
   String userNickName;
   String tableNo;
   String roundtable;
+  String userId;
+  String paymentMethod;
 
   OrderHistories({
     this.id = "",
@@ -141,6 +148,8 @@ class OrderHistories {
     required this.userNickName,
     required this.tableNo,
     required this.roundtable,
+    required this.userId,
+    required this.paymentMethod,
   });
 
   factory OrderHistories.fromJson(Map<String, dynamic> json) {
@@ -160,6 +169,8 @@ class OrderHistories {
       userNickName: json['userNickName'] as String? ?? "",
       tableNo: json['tableNo'] as String? ?? "",
       roundtable: json['roundtable'] as String? ?? "",
+      userId: json['userId'] as String? ?? "",
+      paymentMethod: json['paymentMethod'] as String? ?? "",
     );
   }
 
@@ -178,6 +189,8 @@ class OrderHistories {
       userNickName: json['userNickName'],
       tableNo: json['tableNo'] as String,
       roundtable: json['roundtable'] as String,
+      userId: json['userId'] as String,
+      paymentMethod: json['paymentMethod'] as String,
     );
   }
 
@@ -202,6 +215,8 @@ class OrderHistories {
       'partnerId': partnerId,
       'tableNo': tableNo,
       'roundtable': roundtable,
+      'userId': userId,
+      'paymentMethod': paymentMethod,
     };
   }
 }

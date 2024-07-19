@@ -17,7 +17,7 @@ class ReserveTableFirebaseService implements ReserveTableHistoryService {
     print("ReserveTable count: ${qs.docs.length}");
     AllReserveTableHistory ReserveTableHistories =
         AllReserveTableHistory.fromSnapshot(qs);
-    print(ReserveTableHistories.reservetables);
+
     return ReserveTableHistories.reservetables;
   }
 
@@ -38,6 +38,7 @@ class ReserveTableFirebaseService implements ReserveTableHistoryService {
         'payable': BookingReserveTable.payable,
         'userPhone': BookingReserveTable.userPhone,
         'paymentTime': BookingReserveTable.paymentTime,
+        'sharedWith': BookingReserveTable.sharedWith,
       });
       print("Reservation uploaded successfully");
     } catch (e) {

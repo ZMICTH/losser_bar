@@ -262,6 +262,7 @@ class ReserveTable {
   String userPhone;
   bool payable;
   DateTime paymentTime;
+  List<String>? sharedWith;
 
   ReserveTable({
     required this.selectedTableId,
@@ -277,6 +278,7 @@ class ReserveTable {
     required this.userPhone,
     required this.payable,
     required this.paymentTime,
+    required this.sharedWith,
   });
 
   Map<String, dynamic> toMap() {
@@ -294,6 +296,7 @@ class ReserveTable {
       'userPhone': userPhone,
       'payable': payable,
       'paymentTime': paymentTime,
+      'sharedWith': sharedWith,
     };
   }
 }
@@ -309,6 +312,7 @@ class ReserveTableProvider extends ChangeNotifier {
   String? _selectedLabel;
   String? _selectedTableId;
   int _quantityTable = 0;
+  int _totalSharedWithCount = 0;
 
   List<DateTime> get inactiveDates => _inactiveDates;
   int? get selectedTableSeat => _selectedTableSeat;
@@ -317,6 +321,7 @@ class ReserveTableProvider extends ChangeNotifier {
   int get seatQuantity => _seatQuantity;
   int get maxSeats => _maxSeats;
   int get quantityTable => _quantityTable;
+  int get totalSharedWithCount => _totalSharedWithCount;
 
   List<ReserveTableHistory> _allReserveTable = [];
   List<ReserveTableHistory> get allReserveTable => _allReserveTable;
@@ -430,6 +435,7 @@ class ReserveTableProvider extends ChangeNotifier {
   // for use in cart
   void setTableNo(List<ReserveTableHistory> bookingTable) {
     _allReserveTable = bookingTable;
+    _updateTotalSharedWithCount(); // Update shared count
     notifyListeners();
   }
 
@@ -437,6 +443,7 @@ class ReserveTableProvider extends ChangeNotifier {
     var filteredList =
         _allReserveTable.where((ticket) => ticket.userId == userId).toList();
     _allReserveTable = filteredList;
+    _updateTotalSharedWithCount(); // Update shared count
     notifyListeners();
   }
 
@@ -468,8 +475,39 @@ class ReserveTableProvider extends ChangeNotifier {
             (reservation.userId == currentUserId || isUserShared);
       }).toList();
       _allReserveTable = filteredList;
-      print("Filtered tables: $filteredList");
     }
+    _updateTotalSharedWithCount(); // Update shared count
+    notifyListeners();
+  }
+
+  void setAllReserveTable(List<ReserveTableHistory> reserveTables) {
+    _allReserveTable = reserveTables;
+    _updateTotalSharedWithCount(); // Update shared count
+    notifyListeners();
+  }
+
+  void _updateTotalSharedWithCount() {
+    _totalSharedWithCount = _allReserveTable.fold(0, (sum, table) {
+      int count = table.sharedWith?.length ?? 0;
+      print('Table: ${table.id}, Shared With Count: $count'); // Added print
+      return sum + count;
+    });
+    print('Total Shared With Count: $_totalSharedWithCount'); // Added print
+  }
+
+  List<String> getAllSharedWith() {
+    Set<String> sharedWithSet = {};
+    for (var table in _allReserveTable) {
+      if (table.sharedWith != null) {
+        sharedWithSet.addAll(table.sharedWith!);
+      }
+    }
+    return sharedWithSet.toList();
+  }
+
+  void clearAllReserveTable() {
+    _allReserveTable = [];
+    _totalSharedWithCount = 0;
     notifyListeners();
   }
 }

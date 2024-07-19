@@ -8,6 +8,7 @@ import 'package:losser_bar/Pages/controllers/reserve_table_controller.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
 import 'package:losser_bar/Pages/services/reserve_table_service.dart';
+import 'package:losser_bar/Pages/share_page.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
@@ -121,7 +122,28 @@ class _CartPageState extends State<CartPage> {
           IconButton(
             onPressed: () {
               //Move between page
-              Navigator.pushNamed(context, '');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddPeoplePage(
+                    reservationId: Provider.of<ReserveTableProvider>(context,
+                            listen: false)
+                        .allReserveTable
+                        .first
+                        .id,
+                    selectedSeats: Provider.of<ReserveTableProvider>(context,
+                            listen: false)
+                        .allReserveTable
+                        .first
+                        .selectedSeats,
+                    sharedWithIds: Provider.of<ReserveTableProvider>(context,
+                            listen: false)
+                        .allReserveTable
+                        .first
+                        .sharedWith,
+                  ),
+                ),
+              );
             },
             icon: const Icon(Icons.person_add),
             iconSize: 30,
@@ -158,7 +180,13 @@ class _CartPageState extends State<CartPage> {
                           onPressed: () {
                             Navigator.pushNamed(context, '/3');
                           },
-                          child: Text('Add Orders'),
+                          child: Text(
+                            'Add Orders',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                         )
                       ],
                     ),
@@ -232,6 +260,9 @@ class _CartPageState extends State<CartPage> {
                 tableNo: reserveTableProvider.allReserveTable.first.tableNo!,
                 roundtable:
                     reserveTableProvider.allReserveTable.first.roundtable!,
+                userId: Provider.of<MemberUserModel>(context, listen: false)
+                    .memberUser!
+                    .id,
               );
 
               await billHistoryController.addBillHistory(newOrder);

@@ -392,6 +392,7 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
       userPhone: phoneNumber,
       payable: true,
       paymentTime: DateTime.now(),
+      sharedWith: [userId],
     );
 
     showDialog(

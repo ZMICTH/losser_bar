@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
+import 'package:losser_bar/Pages/payment_detail.dart';
 import 'package:losser_bar/Pages/provider/partner_model.dart';
-
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
 import 'package:losser_bar/Pages/controllers/bill_order_controller.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
@@ -28,50 +28,117 @@ class _PaymentScreenState extends State<PaymentScreen> {
   int? selectedPaymentMethod;
   Set<String> selectedOrders = Set();
   double totalPayment = 0.00;
+  bool hasPendingOrder = false;
 
-  final paymentLabels = ['Qr-code Promptpay'];
+  final paymentLabels = ['Total', 'Split', 'Individual'];
   final paymentIcons = [Icons.qr_code_2_outlined, Icons.money];
 
   @override
   void initState() {
     super.initState();
     billHistoryController = BillHistoryController(BillHistoryFirebaseService());
-    fetchBillOrders(context);
+    fetchBillOrders();
   }
 
-  void fetchBillOrders(BuildContext context) async {
+  void fetchBillOrders() async {
     try {
       List<OrderHistories> fetchedOrders =
           await billHistoryController.fetchBillOrder();
-      Provider.of<BillOrderProvider>(context, listen: false)
-          .setBillOrder(fetchedOrders);
-
-      final reserveTableProvider =
-          Provider.of<ReserveTableProvider>(context, listen: false);
-      if (reserveTableProvider.allReserveTable.isNotEmpty) {
-        String tableNo =
-            reserveTableProvider.allReserveTable.first.tableNo ?? '';
-        String roundtable =
-            reserveTableProvider.allReserveTable.first.roundtable ?? '';
+      if (mounted) {
         Provider.of<BillOrderProvider>(context, listen: false)
-            .setBillOrderForTableAndRoundtable(tableNo, roundtable, context);
-      }
+            .setBillOrder(fetchedOrders);
 
-      setState(() {
-        orders = Provider.of<BillOrderProvider>(context, listen: false)
-            .allOrderHistory;
-        isLoading = false;
-      });
+        final reserveTableProvider =
+            Provider.of<ReserveTableProvider>(context, listen: false);
+        if (reserveTableProvider.allReserveTable.isNotEmpty) {
+          String tableNo =
+              reserveTableProvider.allReserveTable.first.tableNo ?? '';
+          String roundtable =
+              reserveTableProvider.allReserveTable.first.roundtable ?? '';
+          Provider.of<BillOrderProvider>(context, listen: false)
+              .setBillOrderForTableAndRoundtable(tableNo, roundtable, context);
+        }
+
+        setState(() {
+          orders = Provider.of<BillOrderProvider>(context, listen: false)
+              .allOrderHistory;
+          isLoading = false;
+          selectAllOrders();
+        });
+
+        listenForPaymentMethod();
+      }
     } catch (e) {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
       print("Failed to fetch bill orders: $e");
     }
+  }
+
+  void selectAllOrders() {
+    double total = 0.0;
+    for (var order in orders) {
+      for (var item in order.orders) {
+        if (item['delivered'] == null) {
+          setState(() {
+            hasPendingOrder = true;
+          });
+          return;
+        }
+      }
+      selectedOrders.add(order.id);
+      total += order.totalPrice;
+    }
+    setState(() {
+      totalPayment = total;
+    });
+  }
+
+  void listenForPaymentMethod() {
+    final billOrderProvider =
+        Provider.of<BillOrderProvider>(context, listen: false);
+    billOrderProvider.addListener(() {
+      if (!mounted) return;
+      for (var order in billOrderProvider.allOrderHistory) {
+        if (order.paymentMethod != null && order.paymentMethod!.isNotEmpty) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailScreen(
+                paymentMethod: order.paymentMethod!,
+                selectedOrders: selectedOrders.toList(),
+              ),
+            ),
+          );
+          break;
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final billOrderProvider = Provider.of<BillOrderProvider>(context);
     orders = billOrderProvider.allOrderHistory;
+
+    // เพิ่มการตรวจสอบข้อมูล paymentMethod ใน build method
+    for (var order in orders) {
+      if (order.paymentMethod != null && order.paymentMethod!.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentDetailScreen(
+                paymentMethod: order.paymentMethod!,
+                selectedOrders: selectedOrders.toList(),
+              ),
+            ),
+          );
+        });
+        break;
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -109,7 +176,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                           order.orders.fold(0.0, (sum, item) {
                                         return item['delivered'] == false
                                             ? sum
-                                            : sum + item['price'];
+                                            : sum +
+                                                (item['price'] as num)
+                                                    .toDouble();
                                       });
                                       if (selectedOrders.contains(order.id)) {
                                         selectedOrders.remove(order.id);
@@ -132,8 +201,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                     displayTotalPayment(),
-                    paymentMethodList(),
-                    confirmPaymentButton()
+                    if (!hasPendingOrder) paymentMethodList(),
+                    if (!hasPendingOrder) confirmPaymentMethodButton()
                   ],
                 );
               },
@@ -172,9 +241,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
             },
           ),
           title: Text(paymentLabels[index],
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-          trailing: Icon(paymentIcons[index],
-              size: 35, color: Theme.of(context).colorScheme.primary),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          // trailing: Icon(paymentIcons[index],
+          //     size: 35, color: Theme.of(context).colorScheme.primary),
           onTap: () => setState(() => selectedPaymentMethod = index),
         );
       },
@@ -182,85 +251,54 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget confirmPaymentButton() {
+  Widget confirmPaymentMethodButton() {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: ElevatedButton(
-        onPressed: performPayment,
+        onPressed: () => _updatePaymentMethod(context),
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
           textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        child: Text('Pay with ${paymentLabels[selectedPaymentMethod ?? 0]}',
+        child: Text('Pay by ${paymentLabels[selectedPaymentMethod ?? 0]}',
             style: TextStyle(color: Colors.black87)),
       ),
     );
   }
 
-  void performPayment() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.blueGrey[600]!,
-          title: Text('Confirm Payment',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
-          content: QRCodeGenerate(
-            promptPayId: "0987487348",
-            amount: totalPayment,
-            isShowAmountDetail: true,
-            promptPayDetailCustom: Text("สิทธิวิชญ์ พิสิฐภูวโภคิน"),
-            amountDetailCustom: Text('${totalPayment} THB'),
-            width: 400,
-            height: 400,
+  void _updatePaymentMethod(BuildContext context) async {
+    if (selectedOrders.isNotEmpty) {
+      try {
+        final Timestamp now = Timestamp.now();
+
+        await Future.forEach(selectedOrders, (String orderId) async {
+          await FirebaseFirestore.instance
+              .collection('order_history')
+              .doc(orderId)
+              .update({
+            'paymentMethodTime': now.toDate(),
+            'paymentMethod': paymentLabels[selectedPaymentMethod ?? 0],
+          });
+        });
+
+        Provider.of<ProductModel>(context, listen: false).clearproduct();
+
+        // Navigate to payment page based on selected payment method
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentDetailScreen(
+              paymentMethod: paymentLabels[selectedPaymentMethod ?? 0],
+              selectedOrders: selectedOrders.toList(), // Pass selectedOrders
+            ),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel', style: TextStyle(color: Colors.black)),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: Text('Success', style: TextStyle(color: Colors.black)),
-              onPressed: () async {
-                if (selectedOrders.isNotEmpty) {
-                  try {
-                    var currentUser =
-                        Provider.of<MemberUserModel>(context, listen: false)
-                            .memberUser;
-                    final Timestamp now = Timestamp.now();
-
-                    await Future.forEach(selectedOrders,
-                        (String orderId) async {
-                      await FirebaseFirestore.instance
-                          .collection('order_history')
-                          .doc(orderId)
-                          .update({
-                        'userIdPaid': currentUser?.id ?? 'Unknown',
-                        'paidName': currentUser?.nicknameUser ?? 'Unknown',
-                        'paymentTime': now.toDate(),
-                        'totalPrice': totalPayment,
-                        'paymentMethod':
-                            paymentLabels[selectedPaymentMethod ?? 0],
-                        'paymentStatus': true,
-                      });
-                    });
-
-                    Provider.of<ProductModel>(context, listen: false)
-                        .clearproduct();
-                    Navigator.pop(context);
-                    Navigator.of(context).pushReplacementNamed('/home');
-                  } catch (e) {
-                    print('Error during payment update: $e');
-                  }
-                } else {
-                  print('No order selected');
-                }
-              },
-            ),
-          ],
         );
-      },
-    );
+      } catch (e) {
+        print('Error during payment update: $e');
+      }
+    } else {
+      print('No order selected or payment method not selected');
+    }
   }
 
   String getOrderStatus(List<Map<String, dynamic>> orders) {
@@ -371,13 +409,15 @@ class OrderCard extends StatelessWidget {
     return Column(
       children: items.map((item) {
         bool isCanceled = item['delivered'] == false;
+        double itemTotalPrice = (item['quantity'] as num).toDouble() *
+            (item['price'] as num).toDouble();
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Row(
             children: [
               Expanded(
                 child: Text(
-                  "${item['quantity']} ${item['name']} ${item['item']} ${item['unit']}",
+                  "${item['name']} ${item['item']} ${item['unit']} X ${item['quantity']}",
                   style: TextStyle(
                     color: isCanceled ? Colors.red : Colors.black,
                     decoration: isCanceled
@@ -388,7 +428,7 @@ class OrderCard extends StatelessWidget {
                 ),
               ),
               Text(
-                isCanceled ? "0" : "${item['price']}",
+                isCanceled ? "0" : "${itemTotalPrice.toStringAsFixed(2)}",
                 style: TextStyle(
                   color: isCanceled ? Colors.red : Colors.black,
                   decoration: isCanceled
@@ -406,7 +446,11 @@ class OrderCard extends StatelessWidget {
 
   Row buildTotal(OrderHistories order, String orderStatus) {
     double totalPrice = order.orders.fold(0.0, (sum, item) {
-      return item['delivered'] == false ? sum : sum + item['price'];
+      return item['delivered'] == false
+          ? sum
+          : sum +
+              (item['quantity'] as num).toDouble() *
+                  (item['price'] as num).toDouble();
     });
 
     return Row(
