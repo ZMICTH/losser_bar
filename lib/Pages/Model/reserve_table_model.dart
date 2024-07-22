@@ -22,7 +22,6 @@ class TableCatalog {
   });
 
   factory TableCatalog.fromJson(Map<String, dynamic> json) {
-    print(json);
     return TableCatalog(
       id: json['id'] as String,
       onTheDay: (json['onTheDay'] as Timestamp).toDate(),

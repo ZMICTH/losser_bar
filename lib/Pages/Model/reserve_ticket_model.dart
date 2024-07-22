@@ -90,7 +90,6 @@ class BookingTicket {
   bool payable;
   bool checkIn;
   DateTime paymentTime;
-  int? sharedCount;
   List<String>? sharedWith;
   String partnerId;
 
@@ -107,11 +106,11 @@ class BookingTicket {
     required this.checkIn,
     required this.partnerId,
     required this.paymentTime,
-    required this.sharedCount,
     required this.sharedWith,
   });
 
   factory BookingTicket.fromJson(Map<String, dynamic> json) {
+    print(json);
     return BookingTicket(
       userId: json['userId'] as String,
       ticketId: json['ticketId'] as String,
@@ -126,7 +125,7 @@ class BookingTicket {
       checkIn: json['checkIn'] as bool,
       partnerId: json['partnerId'] as String,
       paymentTime: (json['eventDate'] as Timestamp).toDate(),
-      sharedCount: json['sharedCount'] as int? ?? 0,
+
       sharedWith: json['sharedWith'] != null
           ? List<String>.from(json['sharedWith'] as List)
           : null,
@@ -147,7 +146,6 @@ class BookingTicket {
       'checkIn': checkIn,
       'partnerId': partnerId,
       'paymentTime': paymentTime,
-      'sharedCount': sharedCount,
       'sharedWith': sharedWith,
     };
   }
@@ -207,7 +205,7 @@ class ReservationTicketProvider extends ChangeNotifier {
   DateTime? _eventDate;
   int _quantityTable = 0;
   String? _selectedTableLabel;
-  int? _selectedTablePrice;
+  num? _selectedTablePrice; // Changed to num?
   double _totalPrice = 0.0;
   int _ticketQuantity = 1;
   int _selectedTableSeats = 0;
@@ -219,7 +217,7 @@ class ReservationTicketProvider extends ChangeNotifier {
   DateTime? get eventDate => _eventDate;
   int get quantityTable => _quantityTable;
   String? get selectedTableLabel => _selectedTableLabel;
-  int? get selectedTablePrice => _selectedTablePrice;
+  num? get selectedTablePrice => _selectedTablePrice; // Changed to num?
   double get totalPrice => _totalPrice;
   int get ticketQuantity => _ticketQuantity;
   int get selectedTableSeats => _selectedTableSeats;
@@ -282,7 +280,7 @@ class ReservationTicketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedTableLabel(String? label, int? price, int seats) {
+  void setSelectedTableLabel(String? label, num? price, int seats) {
     _selectedTableLabel = label;
     _selectedTablePrice = price;
     _selectedTableSeats = seats;

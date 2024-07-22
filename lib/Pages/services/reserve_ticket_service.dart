@@ -38,7 +38,6 @@ class TicketConcertFirebaseService implements TicketConcertService {
         'payable': BookingTicketConcert.payable,
         'checkIn': BookingTicketConcert.checkIn,
         'paymentTime': BookingTicketConcert.paymentTime,
-        'sharedCount': BookingTicketConcert.sharedCount,
         'sharedWith': BookingTicketConcert.sharedWith,
         'partnerId': BookingTicketConcert.partnerId,
       });

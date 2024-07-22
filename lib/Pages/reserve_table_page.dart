@@ -131,6 +131,9 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
   @override
   Widget build(BuildContext context) {
     int quantity = Provider.of<ReserveTableProvider>(context).seatQuantity;
+    // Create a NumberFormat instance for formatting
+    final numberFormat = NumberFormat("#,##0", "en_US");
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -140,16 +143,14 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
       body: Builder(builder: (context) {
         return Column(
           children: <Widget>[
-            const SizedBox(
-              width: 10,
-            ),
-            const Text(
-              'Today',
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            SizedBox(height: 20),
+            // const Text(
+            //   '',
+            //   style: TextStyle(
+            //     fontSize: 40,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(2.0),
               child: DatePicker(DateTime.now(),
@@ -159,6 +160,7 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                   initialSelectedDate: DateTime.now(),
                   selectionColor: Colors.blueGrey,
                   selectedTextColor: Colors.white,
+                  deactivatedColor: Colors.red,
                   inactiveDates:
                       Provider.of<ReserveTableProvider>(context, listen: true)
                           .inactiveDates, onDateChange: (date) {
@@ -170,7 +172,7 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
               }),
             ),
             SizedBox(
-              height: 10,
+              height: 30,
             ),
             Expanded(
               child: Consumer<ReserveTableProvider>(
@@ -256,7 +258,8 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text('${labelMap['label']}'),
-                              Text('Price: ${labelMap['tablePrices']} THB'),
+                              Text(
+                                  'Price: ${numberFormat.format(labelMap['tablePrices'])} THB'),
                               Text(
                                   'Available Tables: ${labelMap['totaloftable']}'),
                             ],
@@ -276,9 +279,10 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "Please select the number of seats.",
-                    style: TextStyle(color: Colors.black),
+                    "Please select the number of seats",
+                    style: TextStyle(color: Colors.black, fontSize: 18),
                   ),
+                  SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -319,13 +323,18 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
               ),
               SizedBox(height: 10),
               Text(
-                'Price: THB ${(selectedTablePrice! * quantity).toStringAsFixed(2)}',
-                style: TextStyle(color: Colors.black),
+                'Total Price: THB ${numberFormat.format(selectedTablePrice! * quantity)}',
+                style: TextStyle(color: Colors.black, fontSize: 22),
               ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _confirmReserving,
-                child: Text("Confirm Reserving"),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: ElevatedButton(
+                  onPressed: _confirmReserving,
+                  child: Text(
+                    "Confirm Reserving",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ],

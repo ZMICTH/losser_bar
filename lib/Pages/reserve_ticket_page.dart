@@ -98,6 +98,8 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
     final provider = Provider.of<ReservationTicketProvider>(context);
     List<Map<String, dynamic>> allLabels =
         provider.tables.expand((table) => table.tableLables).toList();
+    // Create a NumberFormat instance for formatting
+    final numberFormat = NumberFormat("#,##0", "en_US");
 
     return SingleChildScrollView(
       child: Padding(
@@ -214,14 +216,18 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                           Text(
                             '${label['label']} - ${label['tablePrices']} THB',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.grey,
+                              color: isAvailable
+                                  ? (isSelected ? Colors.white : Colors.grey)
+                                  : Colors.white,
                               fontSize: 16,
                             ),
                           ),
                           Text(
                             'Available: ${label['totaloftable']}',
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.grey,
+                              color: isAvailable
+                                  ? (isSelected ? Colors.white : Colors.grey)
+                                  : Colors.white,
                             ),
                           ),
                         ],
@@ -289,7 +295,8 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                           Text('Total Price',
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
-                          Text('THB ${provider.totalPrice.toStringAsFixed(2)}',
+                          Text(
+                              'THB ${numberFormat.format(provider.totalPrice)}',
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
                           Text('Total Ticket: ${provider.ticketQuantity}',
@@ -304,7 +311,11 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text("Confirm Reserving"),
+                        child: Text(
+                          "Confirm Reserving",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -326,14 +337,34 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
             .memberUser
             ?.nicknameUser ??
         'defaultNickname';
-
     final ticketDocRef = FirebaseFirestore.instance
         .collection('ticket_concert_catalog')
         .doc(widget.ticketId);
-
     final tableDocRef = FirebaseFirestore.instance
         .collection('table_catalog')
         .doc(provider.selectedTableId);
+    final totalPrice = provider.totalPrice;
+    final partnerId =
+        Provider.of<SelectedPartnerProvider>(context, listen: false)
+            .selectedPartnerId;
+
+    // Proceed to create the reservation
+    final newReservation = BookingTicket(
+      userId: userId,
+      ticketId: widget.ticketId,
+      nicknameUser: userNickName,
+      eventName: widget.eventName,
+      selectedTableLabel: provider.selectedTableLabel!,
+      eventDate: widget.eventDate,
+      partnerId: partnerId!,
+      totalPayment: totalPrice,
+      ticketQuantity: provider.ticketQuantity,
+      paymentTime: DateTime.now(),
+      payable: true,
+      checkIn: false,
+      sharedWith: [userId],
+    );
+    print(newReservation);
 
     showDialog(
       context: context,
@@ -344,118 +375,97 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
           title: Text('Confirm Reserving'),
           content: QRCodeGenerate(
             promptPayId: "0987487348",
-            amount: provider.totalPrice,
+            amount: totalPrice,
             isShowAmountDetail: true,
             promptPayDetailCustom: Text("สิทธิวิชญ์ พิสิฐภูวโภคิน"),
-            amountDetailCustom: Text('${provider.totalPrice} THB'),
+            amountDetailCustom: Text('$totalPrice THB'),
             width: 400,
             height: 400,
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Confirm'),
+              child: Text('Confirm'),
               onPressed: () async {
                 Navigator.of(context).pop();
+
                 try {
-                  await FirebaseFirestore.instance
-                      .runTransaction((transaction) async {
-                    // Read the current ticket document
-                    DocumentSnapshot ticketSnapshot =
-                        await transaction.get(ticketDocRef);
-                    if (!ticketSnapshot.exists) {
-                      throw Exception("Concert ticket does not exist!");
-                    }
-
-                    // Read the current table document
-                    DocumentSnapshot tableSnapshot =
-                        await transaction.get(tableDocRef);
-                    if (!tableSnapshot.exists) {
-                      throw Exception('Table data not available');
-                    }
-
-                    // Calculate the new number of tickets
-                    int currentTickets = ticketSnapshot.get('numberOfTickets');
-                    if (currentTickets < provider.ticketQuantity) {
-                      throw Exception("Not enough tickets available!");
-                    }
-                    int updatedTickets =
-                        currentTickets - provider.ticketQuantity;
-
-                    // Update the ticket document
-                    transaction.update(
-                        ticketDocRef, {'numberOfTickets': updatedTickets});
-
-                    Map<String, dynamic> data =
-                        tableSnapshot.data() as Map<String, dynamic>;
-                    List<dynamic> tableLabels = data['tableLables'];
-                    List<Map<String, dynamic>> updatedLabels = [];
-                    for (var label in tableLabels) {
-                      Map<String, dynamic> currentLabel =
-                          Map<String, dynamic>.from(label);
-
-                      if (currentLabel['label'] ==
-                          provider.selectedTableLabel) {
-                        int newTotalOfTable =
-                            (currentLabel['totaloftable'] as int) - 1;
-
-                        updatedLabels.add({
-                          'label': currentLabel['label'],
-                          'numberofchairs': currentLabel['numberofchairs'],
-                          'seats': currentLabel['seats'],
-                          'tablePrices': currentLabel['tablePrices'],
-                          'totaloftable': newTotalOfTable,
-                        });
-                      } else {
-                        updatedLabels.add(currentLabel);
+                  FirebaseFirestore.instance.runTransaction(
+                    (transaction) async {
+                      DocumentSnapshot ticketSnapshot =
+                          await transaction.get(ticketDocRef);
+                      if (!ticketSnapshot.exists) {
+                        throw Exception("Concert ticket does not exist!");
                       }
-                    }
 
-                    // Update the table document
-                    transaction
-                        .update(tableDocRef, {'tableLables': updatedLabels});
+                      DocumentSnapshot tableSnapshot =
+                          await transaction.get(tableDocRef);
+                      if (!tableSnapshot.exists) {
+                        throw Exception('Table data not available');
+                      }
 
-                    final partnerId = Provider.of<SelectedPartnerProvider>(
-                            context,
-                            listen: false)
-                        .selectedPartnerId;
+                      // Calculate the new number of tickets
+                      int currentTickets =
+                          ticketSnapshot.get('numberOfTickets');
+                      if (currentTickets < provider.ticketQuantity) {
+                        throw Exception("Not enough tickets available!");
+                      }
+                      int updatedTickets =
+                          currentTickets - provider.ticketQuantity;
 
-                    // Proceed to create the reservation
-                    final newReservation = BookingTicket(
-                      userId: userId,
-                      ticketId: widget.ticketId,
-                      nicknameUser: userNickName,
-                      eventName: widget.eventName,
-                      selectedTableLabel: provider.selectedTableLabel!,
-                      eventDate: widget.eventDate,
-                      partnerId: partnerId!,
-                      totalPayment: provider.totalPrice,
-                      ticketQuantity: provider.ticketQuantity,
-                      paymentTime: DateTime.now(),
-                      payable: true,
-                      checkIn: false,
-                      sharedCount: 0,
-                      sharedWith: [],
-                    );
-                    print(newReservation);
+                      // Update the ticket document
+                      transaction.update(
+                          ticketDocRef, {'numberOfTickets': updatedTickets});
 
-                    // Assuming you have a method to add the reservation in your controller
-                    await ticketconcertcontroller
-                        .addReserveTicket(newReservation);
-                  });
+                      Map<String, dynamic> data =
+                          tableSnapshot.data() as Map<String, dynamic>;
+                      List<dynamic> tableLabels = data['tableLables'];
+                      List<Map<String, dynamic>> updatedLabels = [];
+                      for (var label in tableLabels) {
+                        Map<String, dynamic> currentLabel =
+                            Map<String, dynamic>.from(label);
 
+                        if (currentLabel['label'] ==
+                            provider.selectedTableLabel) {
+                          int newTotalOfTable =
+                              (currentLabel['totaloftable'] as int) - 1;
+
+                          updatedLabels.add({
+                            'label': currentLabel['label'],
+                            'numberofchairs': currentLabel['numberofchairs'],
+                            'seats': currentLabel['seats'],
+                            'tablePrices': currentLabel['tablePrices'],
+                            'totaloftable': newTotalOfTable,
+                          });
+                        } else {
+                          updatedLabels.add(currentLabel);
+                        }
+                      }
+
+                      // Update the table document
+                      transaction
+                          .update(tableDocRef, {'tableLables': updatedLabels});
+
+                      // Assuming you have a method to add the reservation in your controller
+                      await ticketconcertcontroller
+                          .addReserveTicket(newReservation);
+                    },
+                  );
+
+                  // Show success message before navigation
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Reservation successful'),
                       backgroundColor: Colors.green,
                     ),
                   );
-                  // If you're clearing selections or resetting state, do it here
 
-                  Navigator.pop(context); // Close the dialog
+                  // Clear the booking ticket after successful reservation
+                  provider.clearBookingTable();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pushReplacementNamed('/home');
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
