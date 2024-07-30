@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class MemberUser {
@@ -12,6 +13,7 @@ class MemberUser {
   List<Map<String, dynamic>> useService;
 
   MemberUser({
+    this.id = "",
     required this.nicknameUser,
     required this.ageUser,
     required this.phoneUser,
@@ -23,7 +25,9 @@ class MemberUser {
   });
 
   factory MemberUser.fromJson(Map<String, dynamic> json) {
+    print(json);
     return MemberUser(
+      id: json['id'] ?? "",
       nicknameUser: json['nicknameUser'] ?? '', // Safe handling of null values
       ageUser: json['age']?.toString() ?? '',
       phoneUser: json['phoneNumber'] ?? '',
@@ -59,10 +63,39 @@ class MemberUser {
   }
 }
 
+class AllMemberUser {
+  final List<MemberUser> memberusers;
+
+  AllMemberUser(this.memberusers);
+
+  factory AllMemberUser.fromJson(List<dynamic> json) {
+    List<MemberUser> memberusers =
+        json.map((item) => MemberUser.fromJson(item)).toList();
+    return AllMemberUser(memberusers);
+  }
+
+  factory AllMemberUser.fromSnapshot(QuerySnapshot qs) {
+    List<MemberUser> memberusers = qs.docs.map((DocumentSnapshot ds) {
+      Map<String, dynamic> dataWithId = ds.data() as Map<String, dynamic>;
+      dataWithId['id'] = ds.id;
+      return MemberUser.fromJson(dataWithId);
+    }).toList();
+    return AllMemberUser(memberusers);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'memberusers': memberusers.map((member) => member.toJson()).toList(),
+    };
+  }
+}
+
 class MemberUserModel with ChangeNotifier {
   MemberUser? _memberUser;
-
   MemberUser? get memberUser => _memberUser;
+
+  List<MemberUser> _allMembers = [];
+  List<MemberUser> get allMembers => _allMembers;
 
   void setMemberUser(MemberUser memberUser) {
     _memberUser = memberUser;
@@ -85,24 +118,8 @@ class MemberUserModel with ChangeNotifier {
     }
   }
 
-  // Method to get the latest useService entry
-  Map<String, String>? getLatestUseService() {
-    if (_memberUser != null && _memberUser!.useService.isNotEmpty) {
-      var latestUseService = _memberUser!.useService.last;
-      return {
-        'partnerId': latestUseService['partnerId'] as String,
-        'tableNo': latestUseService['tableNo'] as String,
-        'roundTable': latestUseService['roundtable'] as String,
-      };
-    }
-    return null;
-  }
-
-  // Method to add a new useService entry
-  void addUseService(Map<String, dynamic> newUseService) {
-    if (_memberUser != null) {
-      _memberUser!.useService.add(newUseService);
-      notifyListeners();
-    }
+  void setAllMemberUser(List<MemberUser> memberUser) {
+    _allMembers = memberUser;
+    notifyListeners();
   }
 }

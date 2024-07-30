@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
 import 'package:losser_bar/Pages/reserve_ticket_page.dart';
 import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ class _HomepageState extends State<Homepage> {
   late TicketConcertController ticketconcertcontroller =
       TicketConcertController(TicketConcertFirebaseService());
   bool isLoading = true;
+  bool _isEventDay = false;
 
   @override
   void initState() {
@@ -27,10 +29,27 @@ class _HomepageState extends State<Homepage> {
   Future<void> _loadTicketCatalogs() async {
     setState(() => isLoading = true); // Ensure loading state is true
     try {
+      String? partnerId =
+          Provider.of<SelectedPartnerProvider>(context, listen: false)
+              .selectedPartnerId;
+      if (partnerId == null) {
+        throw Exception('Partner ID is not selected');
+      }
       var tickets = await ticketconcertcontroller.fetchTicketConcertModel();
       Provider.of<TicketcatalogProvider>(context, listen: false)
-          .setReserveTicket(
-              tickets); // Adjust this based on your actual implementation
+          .setReserveTicket(tickets, partnerId);
+      final providerTicket =
+          Provider.of<TicketcatalogProvider>(context, listen: false);
+      final today = DateTime.now();
+      final concertReservations =
+          providerTicket.allTicketConcert.where((reservation) {
+        return reservation.eventDate.year == today.year &&
+            reservation.eventDate.month == today.month &&
+            reservation.eventDate.day == today.day;
+      }).toList();
+      setState(() {
+        _isEventDay = concertReservations.isNotEmpty;
+      });
     } catch (e) {
       print('Error fetching TicketCatalog: $e');
     } finally {
@@ -43,11 +62,12 @@ class _HomepageState extends State<Homepage> {
     var detailproductModel = Provider.of<TicketcatalogProvider>(context);
     var ticketconcert = detailproductModel.allTicketConcert;
     var validTickets = _getValidTickets(ticketconcert);
+    var partnerDetail = Provider.of<SelectedPartnerProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: const Text('Losser Bar  '),
+        title: Text('${partnerDetail.selectedPartnerName}  '),
         foregroundColor: Theme.of(context).colorScheme.surface,
         titleTextStyle: TextStyle(
           fontSize: 25,
@@ -266,16 +286,23 @@ class _HomepageState extends State<Homepage> {
         'label': 'Reserve Table',
         'route': '/1', // Example route, adjust as necessary
       },
-      {
-        'icon': Icons.fastfood,
-        'label': 'Order',
-        'route': '/cart',
-      },
+      if (!_isEventDay)
+        {
+          'icon': Icons.fastfood,
+          'label': 'Order Food',
+          'route': '/cart',
+        },
       {
         'icon': Icons.fastfood,
         'label': 'Payment Order',
         'route': '/payment',
       },
+      if (_isEventDay)
+        {
+          'icon': Icons.fastfood,
+          'label': 'Order Food for ticket',
+          'route': '/cartevent',
+        },
       // {
       //   'icon': Icons.fastfood,
       //   'label': 'Food and Beverage',

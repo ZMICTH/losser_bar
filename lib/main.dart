@@ -8,6 +8,7 @@ import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/all_qr.dart';
 import 'package:losser_bar/Pages/all_receipt.dart';
+import 'package:losser_bar/Pages/controllers/cart_if_eventdate.dart';
 import 'package:losser_bar/Pages/provider/partner_model.dart';
 import 'package:losser_bar/Pages/table_receipt.dart';
 import 'package:losser_bar/Pages/ticket_receipt.dart';
@@ -127,6 +128,7 @@ class MyApp extends StatelessWidget {
         '/allqr': (context) => AllQRCodePage(),
         '/qrtable': (context) => const QrReservations(),
         '/qrticket': (context) => const QrReservationTickets(),
+        '/cartevent': (context) => CartEventPage(),
       },
     );
   }

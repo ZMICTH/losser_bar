@@ -52,6 +52,7 @@ class _NewHomePageState extends State<NewHomePage> {
       stream: FirebaseFirestore.instance
           .collection('partner')
           .where('role', isEqualTo: 'partner')
+          .where('userStatus', isEqualTo: "active")
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -63,6 +64,10 @@ class _NewHomePageState extends State<NewHomePage> {
         }
 
         var partners = snapshot.data!.docs;
+        // Print each document's data
+        for (var partner in partners) {
+          print(partner.data());
+        }
 
         return GridView.builder(
           padding: EdgeInsets.all(16.0),
@@ -75,6 +80,7 @@ class _NewHomePageState extends State<NewHomePage> {
           itemCount: partners.length,
           itemBuilder: (context, index) {
             var partner = partners[index];
+            var partnerData = partner.data() as Map<String, dynamic>;
             return Card(
               color: Colors.blueGrey,
               shape: RoundedRectangleBorder(
@@ -83,7 +89,7 @@ class _NewHomePageState extends State<NewHomePage> {
               child: InkWell(
                 onTap: () {
                   Provider.of<SelectedPartnerProvider>(context, listen: false)
-                      .selectPartner(partner.id);
+                      .selectPartner(partner.id, partnerData['partnerName']);
                   Navigator.pushNamed(context, '/home');
                 },
                 child: Column(

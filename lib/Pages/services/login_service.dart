@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 abstract class LoginService {
   Future<Map<String, dynamic>> getLogin(String userId);
   void addUser(MemberUser user);
+
+  Future<List<MemberUser>> getAllUserAccount();
 }
 
 class LoginFirebaseService implements LoginService {
@@ -24,11 +26,6 @@ class LoginFirebaseService implements LoginService {
       print("Document does not exist or is empty.");
       return {};
     }
-    // Map<String, dynamic> userData = qs.data() as Map<String, dynamic>;
-    // print(qs.data());
-    // print(userData);
-    // return userData;
-    // return qs.docs.map((doc) => Fireba.fromDocument(doc)).toList();
   }
 
   @override
@@ -43,5 +40,18 @@ class LoginFirebaseService implements LoginService {
       'lastnameUser': user.lastnameUser,
       'taxId': user.idcard,
     });
+  }
+
+  @override
+  Future<List<MemberUser>> getAllUserAccount() async {
+    print("getAllUserAccount is called");
+    QuerySnapshot qs = await FirebaseFirestore.instance
+        .collection('User')
+        .where('type', isEqualTo: 'customer')
+        .get();
+    print("BillOrder count: ${qs.docs.length}");
+    AllMemberUser memberUser = AllMemberUser.fromSnapshot(qs);
+    print(memberUser.memberusers);
+    return memberUser.memberusers;
   }
 }
