@@ -11,14 +11,21 @@ class ProductModel extends ChangeNotifier {
   List<FoodAndBeverageProduct> _promotions = [];
 
   final List _cart = [];
+  String? partnerId;
 
   List<FoodAndBeverageProduct> get products => _products;
   List<FoodAndBeverageProduct> get promotions => _promotions;
   get cart => _cart;
 
   void setFoodAndBeverageProducts(
-      List<FoodAndBeverageProduct> foodAndBeverageProducts) {
-    _foodAndBeverageProducts = foodAndBeverageProducts;
+      List<FoodAndBeverageProduct> foodAndBeverageProducts, String? partnerId) {
+    if (partnerId != null) {
+      _foodAndBeverageProducts = foodAndBeverageProducts
+          .where((product) => product.partnerId == partnerId)
+          .toList();
+    } else {
+      _foodAndBeverageProducts = foodAndBeverageProducts;
+    }
     _filterProductsAndPromotions();
     notifyListeners();
   }
@@ -117,13 +124,5 @@ class ProductModel extends ChangeNotifier {
   void clearproduct() {
     cart.clear();
     notifyListeners();
-  }
-
-  Future<void> fetchFoodAndBeverageProducts() async {
-    // Fetch products from Firebase or other source
-    // Example:
-    var foodandbeverageProducts =
-        await FoodAndBeverageFirebaseService().getAllFoodAndBeverageProduct();
-    setFoodAndBeverageProducts(foodandbeverageProducts);
   }
 }

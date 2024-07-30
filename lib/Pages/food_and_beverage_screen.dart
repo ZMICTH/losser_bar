@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
 
 import 'package:losser_bar/Pages/controllers/food_and_beverage_controller.dart';
@@ -25,10 +26,16 @@ class _FoodandBeverageScreenState extends State<FoodandBeverageScreen> {
 
   Future<void> _loadFoodAndBeverageProducts() async {
     try {
+      String? partnerId =
+          Provider.of<SelectedPartnerProvider>(context, listen: false)
+              .selectedPartnerId;
+      if (partnerId == null) {
+        throw Exception('Partner ID is not selected');
+      }
       var foodProducts =
           await foodandbeveragecontroller.fetchFoodAndBeverageProduct();
       Provider.of<ProductModel>(context, listen: false)
-          .setFoodAndBeverageProducts(foodProducts);
+          .setFoodAndBeverageProducts(foodProducts, partnerId);
     } catch (e) {
       print('Error fetching FoodProduct: $e');
     } finally {

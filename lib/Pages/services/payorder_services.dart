@@ -11,7 +11,7 @@ class OrderHistoryFirebaseService implements OrderHistoryService {
     print("fetchOrdersHistory is called");
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('order_history')
-        .where('userId')
+        .where('paymentStatus', isEqualTo: true)
         .get();
     print("Orders History count: ${qs.docs.length}");
     AllOrderHistory allOrderHistory = AllOrderHistory.fromSnapshot(qs);

@@ -3,26 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
-import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 
+import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/controllers/bill_order_controller.dart';
-import 'package:losser_bar/Pages/controllers/reserve_table_controller.dart';
 
+import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
 import 'package:losser_bar/Pages/provider/product_model_page.dart';
 import 'package:losser_bar/Pages/services/bill_historyservice.dart';
-import 'package:losser_bar/Pages/services/reserve_table_service.dart';
+
+import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
 import 'package:losser_bar/Pages/share_page.dart';
 import 'package:provider/provider.dart';
 
-class CartPage extends StatefulWidget {
+class CartEventPage extends StatefulWidget {
   @override
-  State<CartPage> createState() => _CartPageState();
+  State<CartEventPage> createState() => _CartEventPageState();
 }
 
-class _CartPageState extends State<CartPage> {
-  late ReserveTableHistoryController reservetablehistorycontroller =
-      ReserveTableHistoryController(ReserveTableFirebaseService());
-
+class _CartEventPageState extends State<CartEventPage> {
+  late TicketConcertController ticketconcertcontroller =
+      TicketConcertController(TicketConcertFirebaseService());
   bool isLoading = true;
 
   final BillHistoryController billHistoryController =
@@ -31,25 +31,24 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
-    reservetablehistorycontroller =
-        ReserveTableHistoryController(ReserveTableFirebaseService());
-    _loadReservationHistory();
+
+    ticketconcertcontroller =
+        TicketConcertController(TicketConcertFirebaseService());
+    _fetchBookingTickets();
   }
 
-  Future<void> _loadReservationHistory() async {
+  Future<void> _fetchBookingTickets() async {
     setState(() => isLoading = true);
     try {
-      List<ReserveTableHistory> fetchedReservations =
-          await reservetablehistorycontroller.fetchReserveTableHistory();
-      Provider.of<ReserveTableProvider>(context, listen: false)
-          .setTableNo(fetchedReservations);
-      Provider.of<ReserveTableProvider>(context, listen: false)
+      var reservations = await ticketconcertcontroller.fetchReservationTicket();
+      Provider.of<ReservationTicketProvider>(context, listen: false)
+          .setTableNo(reservations);
+      Provider.of<ReservationTicketProvider>(context, listen: false)
           .filterCheckedInToday(context);
 
-      // Check if there is any valid table number
-      var reserveTableProvider =
-          Provider.of<ReserveTableProvider>(context, listen: false);
-      if (reserveTableProvider.allReserveTable.isEmpty) {
+      var bookingTicketProvider =
+          Provider.of<ReservationTicketProvider>(context, listen: false);
+      if (bookingTicketProvider.allReservationTicket.isEmpty) {
         _showNoTableAlertDialog();
       }
     } catch (e) {
@@ -104,16 +103,13 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Consumer<ReserveTableProvider>(
-          builder: (context, reserveTableProvider, child) {
+        title: Consumer<ReservationTicketProvider>(
+          builder: (context, reserveTicketProvider, child) {
             String tableNo = "No Table";
-            if (reserveTableProvider.allReserveTable.isNotEmpty) {
-              tableNo = reserveTableProvider.allReserveTable.first.tableNo!;
+            if (reserveTicketProvider.allReservationTicket.isNotEmpty) {
+              tableNo =
+                  reserveTicketProvider.allReservationTicket.first.tableNo!;
               print("table filter: ${tableNo}");
-              print(
-                  "table filter: ${reserveTableProvider.allReserveTable.first.id}");
-              print(
-                  "table filter: ${reserveTableProvider.allReserveTable.first.partnerId}");
             }
             return Text(
               'Table No. $tableNo',
@@ -130,19 +126,22 @@ class _CartPageState extends State<CartPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddPeoplePage(
-                    reservationId: Provider.of<ReserveTableProvider>(context,
+                    reservationId: Provider.of<ReservationTicketProvider>(
+                            context,
                             listen: false)
-                        .allReserveTable
+                        .allReservationTicket
                         .first
                         .id,
-                    selectedSeats: Provider.of<ReserveTableProvider>(context,
+                    selectedSeats: Provider.of<ReservationTicketProvider>(
+                            context,
                             listen: false)
-                        .allReserveTable
+                        .allReservationTicket
                         .first
-                        .selectedSeats,
-                    sharedWithIds: Provider.of<ReserveTableProvider>(context,
+                        .ticketQuantity,
+                    sharedWithIds: Provider.of<ReservationTicketProvider>(
+                            context,
                             listen: false)
-                        .allReserveTable
+                        .allReservationTicket
                         .first
                         .sharedWith,
                   ),
@@ -236,10 +235,11 @@ class _CartPageState extends State<CartPage> {
                   Provider.of<ProductModel>(context, listen: false)
                       .getTotalQuantity();
 
-              var reserveTableProvider =
-                  Provider.of<ReserveTableProvider>(context, listen: false);
+              var reserveTableProvider = Provider.of<ReservationTicketProvider>(
+                  context,
+                  listen: false);
               final partnerId =
-                  reserveTableProvider.allReserveTable.first.partnerId;
+                  reserveTableProvider.allReservationTicket.first.partnerId;
 
               for (var item in billuser) {
                 await FirebaseFirestore.instance
@@ -261,9 +261,10 @@ class _CartPageState extends State<CartPage> {
                     Provider.of<MemberUserModel>(context, listen: false)
                         .memberUser!
                         .nicknameUser,
-                tableNo: reserveTableProvider.allReserveTable.first.tableNo!,
+                tableNo:
+                    reserveTableProvider.allReservationTicket.first.tableNo!,
                 roundtable:
-                    reserveTableProvider.allReserveTable.first.roundtable!,
+                    reserveTableProvider.allReservationTicket.first.roundtable!,
                 userId: Provider.of<MemberUserModel>(context, listen: false)
                     .memberUser!
                     .id,

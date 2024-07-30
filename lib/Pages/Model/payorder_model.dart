@@ -2,103 +2,119 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class PayOrder {
-  String id;
-  String tableNo;
-  String roundTable; //new
+  String id = "";
   List<Map<String, dynamic>> orders;
   double totalPrice;
-  double totalQuantity; //new
-  String userId;
-  String userIdPaid;
+  double totalQuantity;
+  String partnerId;
   DateTime billingTime;
-  String paidName; //new
-  DateTime paymentTime; //new
-  String paymentMethod; //new
+  bool paymentStatus;
+  String userNickName;
+  String tableNo;
+  String roundtable;
+  String userId;
+  String paymentMethod;
+  List<Map<String, dynamic>> paymentsBy;
 
   PayOrder({
-    this.id = '',
-    required this.tableNo,
-    required this.roundTable,
+    this.id = "",
     required this.orders,
     required this.totalPrice,
     required this.totalQuantity,
-    required this.userId,
-    required this.userIdPaid,
+    required this.partnerId,
     required this.billingTime,
-    required this.paidName,
-    required this.paymentTime,
+    required this.paymentStatus,
+    required this.userNickName,
+    required this.tableNo,
+    required this.roundtable,
+    required this.userId,
     required this.paymentMethod,
+    required this.paymentsBy,
   });
 
   factory PayOrder.fromJson(Map<String, dynamic> json) {
-    List<Map<String, dynamic>> orders = (json['orders'] as List? ?? [])
-        .map((order) => order as Map<String, dynamic>)
-        .toList();
-
+    print(json);
     return PayOrder(
-      tableNo: json['tableNo'] as String? ?? 'default value',
-      roundTable: json['roundTable'] as String? ?? 'default value',
-      orders: orders,
+      id: json['id'] as String,
+      orders: (json['orders'] as List<dynamic>? ?? [])
+          .map<Map<String, dynamic>>(
+              (item) => Map<String, dynamic>.from(item as Map))
+          .toList(),
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
       totalQuantity: json['totalQuantity'] ?? 0,
-      userId: json['userId'] as String? ?? 'default value',
-      userIdPaid: json['userIdPaid'] as String,
-      billingTime: json['billingTime'] as DateTime? ?? DateTime.now(),
-      paidName: json['paidName'] as String,
-      paymentTime: json['paymentTime'] as DateTime,
-      paymentMethod: json['paymentMethod'] as String,
+      partnerId: json['partnerId'] as String,
+      billingTime:
+          (json['billingTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      paymentStatus: json['paymentStatus'] as bool? ?? false,
+      userNickName: json['userNickName'] as String? ?? "",
+      tableNo: json['tableNo'] as String? ?? "",
+      roundtable: json['roundtable'] as String? ?? "",
+      userId: json['userId'] as String? ?? "",
+      paymentMethod: json['paymentMethod'] as String? ?? "",
+      paymentsBy: (json['paymentsBy'] as List<dynamic>? ?? [])
+          .map<Map<String, dynamic>>((item) => {
+                'amountPaid': (item['amountPaid'] as num).toDouble(),
+                'paymentTime': (item['paymentTime'] as Timestamp).toDate(),
+                'userId': item['userId']
+              })
+          .toList(),
     );
   }
 
   factory PayOrder.fromSnapshot(DocumentSnapshot snapshot) {
     var json = snapshot.data()! as Map<String, dynamic>; // Assuming data exists
-
-    List<Map<String, dynamic>> orders = (json['orders'] as List? ?? [])
-        .map((order) => order as Map<String, dynamic>)
-        .toList();
-
-    DateTime billingTime = (json['billingTime'] as Timestamp).toDate();
-    DateTime patmentTime = (json['paymentTime'] as Timestamp).toDate();
-
+    print(json);
     return PayOrder(
       id: snapshot.id,
-      tableNo: json['tableNo'] ?? 'default',
-      roundTable: json['roundTable'] ?? 'default',
-      orders: orders,
-      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
-      totalQuantity: json['totalQuantity'],
-      userId: json['userId'] ?? 'default',
-      userIdPaid: json['userIdPaid'],
-      billingTime: billingTime,
-      paidName: json['paidName'],
-      paymentTime: patmentTime,
-      paymentMethod: json['paymentMethod'],
+      orders: (json['orders'] as List)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList(),
+      totalPrice: (json['totalPrice'] as num).toDouble(),
+      totalQuantity: (json['totalQuantity'] as num).toDouble(),
+      partnerId: json['partnerId'] as String,
+      billingTime: (json['billingTime'] as Timestamp).toDate(),
+      paymentStatus: json['paymentStatus'],
+      userNickName: json['userNickName'],
+      tableNo: json['tableNo'] as String,
+      roundtable: json['roundtable'] as String,
+      userId: json['userId'] as String,
+      paymentMethod: json['paymentMethod'] as String,
+      paymentsBy: (json['paymentsBy'] as List<dynamic>? ?? [])
+          .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tableNo': tableNo,
-      'roundTable': roundTable,
-      'orders': orders.map((order) {
-        return {
-          'id': order['id'],
-          'name': order['name'],
-          'price': order['price'],
-          'imagePath': order['imagePath'],
-          'item': order['item'],
-          'unit': order['unit'],
-          'type': order['type'],
-          'quantity': order['quantity'],
-        };
-      }).toList(),
+      'billingTime': billingTime,
       'totalPrice': totalPrice,
       'totalQuantity': totalQuantity,
+      'paymentStatus': paymentStatus,
+      'orders': orders
+          .map((order) => {
+                'delivered': order['delivered'],
+                'name': order['name'],
+                'price': order['price'],
+                'item': order['item'],
+                'unit': order['unit'],
+                'type': order['type'],
+                'quantity': order['quantity'],
+              })
+          .toList(),
+      'userNickName': userNickName,
+      'partnerId': partnerId,
+      'tableNo': tableNo,
+      'roundtable': roundtable,
       'userId': userId,
-      'billingTime': billingTime,
-      'paidName': paidName,
-      'paymentTime': paymentTime,
       'paymentMethod': paymentMethod,
+      'paymentsBy': paymentsBy
+          .map((paid) => {
+                'amountPaid': (paid['amountPaid'] as num).toDouble(),
+                'paymentTime': paid['paymentTime'],
+                'userId': paid['userId'],
+              })
+          .toList(),
     };
   }
 }
@@ -141,9 +157,8 @@ class OrderHistoryProvider extends ChangeNotifier {
   }
 
   void setOrderHistories(List<PayOrder> userId) {
-    var filteredList = _allOrderHistory
-        .where((ticket) => ticket.userIdPaid == userId)
-        .toList();
+    var filteredList =
+        _allOrderHistory.where((ticket) => ticket.userId == userId).toList();
     _allOrderHistory = filteredList;
     notifyListeners();
   }

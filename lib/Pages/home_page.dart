@@ -292,17 +292,18 @@ class _HomepageState extends State<Homepage> {
           'label': 'Order Food',
           'route': '/cart',
         },
+      if (_isEventDay)
+        {
+          'icon': Icons.fastfood,
+          'label': 'Order Food',
+          'route': '/cartevent',
+        },
       {
         'icon': Icons.fastfood,
         'label': 'Payment Order',
         'route': '/payment',
       },
-      if (_isEventDay)
-        {
-          'icon': Icons.fastfood,
-          'label': 'Order Food for ticket',
-          'route': '/cartevent',
-        },
+
       // {
       //   'icon': Icons.fastfood,
       //   'label': 'Food and Beverage',
