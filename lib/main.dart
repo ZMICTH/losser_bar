@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:losser_bar/Pages/Model/bill_order_model.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
-import 'package:losser_bar/Pages/Model/mate_model.dart';
 import 'package:losser_bar/Pages/Model/payorder_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
@@ -19,18 +18,14 @@ import 'package:losser_bar/Pages/food_and_beverage_screen.dart';
 import 'package:losser_bar/Pages/Profile.dart';
 import 'package:losser_bar/Pages/home_page.dart';
 import 'package:losser_bar/Pages/loginscreen.dart';
-import 'package:losser_bar/Pages/matecafe_page.dart';
 import 'package:losser_bar/Pages/payment_page.dart';
 import 'package:losser_bar/Pages/qr_reserve_table.dart';
 import 'package:losser_bar/Pages/qr_reserve_ticket.dart';
-
 import 'package:losser_bar/firebase_options.dart';
 import 'package:losser_bar/newhome.dart';
 import 'package:provider/provider.dart';
-import 'Pages/donation_page.dart';
 import 'Pages/request_song_page.dart';
 import 'Pages/reserve_table_page.dart';
-import 'Pages/shown_your_profile_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,9 +40,6 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => MemberUserModel(),
-      ),
-      ChangeNotifierProvider(
-        create: (context) => MateCafeModel(),
       ),
       ChangeNotifierProvider(
         create: (context) => OrderHistoryProvider(),
@@ -116,9 +108,6 @@ class MyApp extends StatelessWidget {
         // '/2': (context) => ReserveTicketPage(),
         '/3': (context) => FoodandBeverageScreen(),
         '/4': (context) => RequestSongPage(),
-        '/5': (context) => ShownProfilePage(),
-        '/6': (context) => DonationPage(),
-        '/7': (context) => MateCafePage(),
         '/cart': (context) => CartPage(),
         '/allReceipt': (context) => AllReceiptPage(),
         '/orderReceipt': (context) => OrderHistoryPage(),

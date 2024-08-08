@@ -78,6 +78,8 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
 
   @override
   Widget build(BuildContext context) {
+    final numberFormat = NumberFormat("#,##0", "en_US");
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.eventName),
@@ -195,9 +197,9 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                           }
                         : null,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      margin: const EdgeInsets.all(4),
+                      // padding:
+                      //     EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      // margin: EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: isSelected
@@ -208,13 +210,22 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                         color: isAvailable
                             ? (isSelected
                                 ? Colors.deepPurple[800]!.withOpacity(0.3)
-                                : Colors.transparent)
+                                : const Color.fromARGB(0, 32, 25, 25))
                             : Colors.red[300],
                       ),
                       child: Column(
                         children: [
                           Text(
-                            '${label['label']} - ${label['tablePrices']} THB',
+                            '${label['label']} (${label['seats']} seats)',
+                            style: TextStyle(
+                              color: isAvailable
+                                  ? (isSelected ? Colors.white : Colors.grey)
+                                  : Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Price: ${numberFormat.format(label['tablePrices'])} THB',
                             style: TextStyle(
                               color: isAvailable
                                   ? (isSelected ? Colors.white : Colors.grey)
@@ -296,7 +307,7 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
                           Text(
-                              'THB ${numberFormat.format(provider.totalPrice)}',
+                              '${numberFormat.format(provider.totalPrice)} THB',
                               style: const TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
                           Text('Total Ticket: ${provider.ticketQuantity}',
@@ -337,6 +348,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
             .memberUser
             ?.nicknameUser ??
         'defaultNickname';
+    final userPhone = Provider.of<MemberUserModel>(context, listen: false)
+            .memberUser
+            ?.phoneUser ??
+        'defaultNickname';
     final ticketDocRef = FirebaseFirestore.instance
         .collection('ticket_concert_catalog')
         .doc(widget.ticketId);
@@ -363,6 +378,7 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
       payable: true,
       checkIn: false,
       sharedWith: [userId],
+      userPhone: userPhone,
     );
     print(newReservation);
 
@@ -458,7 +474,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                   // Show success message before navigation
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Reservation successful'),
+                      content: Text(
+                        'Reservation successful',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -470,7 +489,10 @@ class _ReserveTicketPageState extends State<ReserveTicketPage> {
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to reserve ticket: $e'),
+                      content: Text(
+                        'Failed to reserve ticket: $e',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );

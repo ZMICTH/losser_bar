@@ -59,6 +59,8 @@ class _TicketReceiptPageState extends State<TicketReceiptPage> {
         Provider.of<ReservationTicketProvider>(context);
     List<BookingTicket>? reservations =
         reserveTicketProvider.allReservationTicket;
+    // Create a NumberFormat instance for formatting
+    final numberFormat = NumberFormat("#,##0", "en_US");
 
     return Scaffold(
       appBar: AppBar(
@@ -87,7 +89,7 @@ class _TicketReceiptPageState extends State<TicketReceiptPage> {
                             const TextStyle(color: Colors.black, fontSize: 18),
                       ),
                       subtitle: Text(
-                        'Concert: ${ticket.eventName}\nTotal Price: ${ticket.totalPayment.toStringAsFixed(2)}',
+                        'Concert: ${ticket.eventName}\nTotal Price: ${numberFormat.format(ticket.totalPayment)} THB',
                         style: const TextStyle(color: Colors.black),
                       ),
                       isThreeLine: true,

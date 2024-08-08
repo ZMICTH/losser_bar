@@ -8,7 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:losser_bar/Pages/Model/login_model.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
-  final String paymentMethod;
+  final String? paymentMethod;
   final List<String> selectedOrders; // Add this field
 
   PaymentDetailScreen({

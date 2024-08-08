@@ -6,7 +6,7 @@ class AllQRCodePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onPrimary,
-        title: const Text('Receipt'),
+        title: const Text('All QR Code'),
         foregroundColor: Theme.of(context).colorScheme.surface,
         titleTextStyle: TextStyle(
           fontSize: 25,

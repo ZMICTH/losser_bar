@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
 import 'package:losser_bar/Pages/controllers/reserve_table_controller.dart';
 import 'package:losser_bar/Pages/services/reserve_table_service.dart';
+import 'package:losser_bar/Pages/share_table.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -41,24 +42,20 @@ class _QrReservationsState extends State<QrReservations> {
       // Fetch all reservations created by the user
       List<ReserveTableHistory> fetchedReservations =
           await reservetablehistorycontroller.fetchReserveTableHistory();
-      List<ReserveTableHistory> userReservations = fetchedReservations
-          .where((reservation) => reservation.userId == userId)
+
+      // Filter reservations where sharedWith contains the userId
+      List<ReserveTableHistory> sharedReservations = fetchedReservations
+          .where((reservation) => reservation.sharedWith!.contains(userId))
           .toList();
 
-      QuerySnapshot sharedReservationsSnapshot = await FirebaseFirestore
-          .instance
-          .collection('reservation_table')
-          .where('sharedWith', arrayContains: userId)
-          .get();
-      List<ReserveTableHistory> sharedReservations = sharedReservationsSnapshot
-          .docs
-          .map((doc) =>
-              ReserveTableHistory.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
+      // Filter reservations created by the user
+      // List<ReserveTableHistory> userReservations = fetchedReservations
+      //     .where((reservation) => reservation.userId == userId)
+      //     .toList();
 
       // Combine both sets of reservations
       List<ReserveTableHistory> allReservations = [
-        ...userReservations,
+        // ...userReservations,
         ...sharedReservations,
       ];
 
@@ -136,6 +133,7 @@ class _QrReservationsState extends State<QrReservations> {
                             reservationDay: reservation.formattedSelectedDay,
                             reservationId: reservation.id,
                             seatsQuantity: reservation.selectedSeats,
+                            sharedWithIds: reservation.sharedWith,
                           ),
                         ),
                       );
@@ -205,6 +203,7 @@ class QRCodeDisplayPage extends StatefulWidget {
   final DateTime reservationDay;
   final String reservationId;
   final int seatsQuantity;
+  final List<String>? sharedWithIds;
 
   QRCodeDisplayPage({
     Key? key,
@@ -212,6 +211,7 @@ class QRCodeDisplayPage extends StatefulWidget {
     required this.reservationDay,
     required this.reservationId,
     required this.seatsQuantity,
+    required this.sharedWithIds,
   }) : super(key: key);
 
   @override
@@ -234,7 +234,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   @override
   void initState() {
     super.initState();
-    _loadSharedCount();
   }
 
   @override
@@ -246,19 +245,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
         _calculateTimeLeft();
       });
       _isDependenciesInitialized = true;
-    }
-  }
-
-  Future<void> _loadSharedCount() async {
-    DocumentSnapshot doc = await FirebaseFirestore.instance
-        .collection('reservation_table')
-        .doc(widget.reservationId)
-        .get();
-
-    if (doc.exists && doc.data() != null) {
-      setState(() {
-        sharedCount = doc.get('sharedCount') ?? 0;
-      });
     }
   }
 
@@ -281,92 +267,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
-  }
-
-  Future<void> _showShareDialog() async {
-    final TextEditingController userIdController = TextEditingController();
-    bool isValid = true;
-
-    await showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(
-            'Share QR Code',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: userIdController,
-                decoration: InputDecoration(
-                  labelText: 'Enter friend\'s user ID',
-                  labelStyle: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              if (!isValid)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    'Cannot share more than ${widget.seatsQuantity - 1} times',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface)),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (sharedCount < widget.seatsQuantity - 1) {
-                  setState(() {
-                    sharedCount++;
-                  });
-
-                  // Save friend's user ID and increment shared count in Firebase
-                  await FirebaseFirestore.instance
-                      .collection('reservation_table')
-                      .doc(widget.reservationId)
-                      .update({
-                    'sharedCount': FieldValue.increment(1),
-                    'sharedWith':
-                        FieldValue.arrayUnion([userIdController.text]),
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('QR code shared successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  Navigator.of(context).pop();
-                } else {
-                  setState(() {
-                    isValid = false;
-                  });
-                }
-              },
-              child: Text('Share',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface)),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -406,13 +306,21 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
               ),
               TextButton(
                 onPressed: () {
-                  _showShareDialog();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ShareQrTablePage(
+                        reservationId: widget.reservationId,
+                        selectedSeats: widget.seatsQuantity,
+                        sharedWithIds: widget.sharedWithIds,
+                      ),
+                    ),
+                  );
                 },
                 child: Text(
                   'Share QR',
                   style: TextStyle(
                     color: Colors.orange,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

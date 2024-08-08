@@ -104,7 +104,7 @@ class _NewHomePageState extends State<NewHomePage> {
                             width: 100,
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(15.0),
+                            padding: const EdgeInsets.all(10.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

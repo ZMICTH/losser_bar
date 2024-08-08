@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:losser_bar/Pages/Model/login_model.dart';
 import 'package:losser_bar/Pages/Model/reserve_table_model.dart';
+import 'package:losser_bar/Pages/provider/partner_model.dart';
+import 'package:provider/provider.dart';
 
 class TicketConcertModel {
   String id = "";
@@ -10,6 +13,7 @@ class TicketConcertModel {
   late DateTime eventDate;
   late DateTime openingSaleDate;
   late DateTime endingSaleDate;
+  late String partnerId;
   double ticketPrice;
 
   TicketConcertModel(
@@ -20,6 +24,7 @@ class TicketConcertModel {
     this.openingSaleDate,
     this.endingSaleDate,
     this.ticketPrice,
+    this.partnerId,
   );
 
   factory TicketConcertModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +37,7 @@ class TicketConcertModel {
       (json['openingSaleDate'] as Timestamp).toDate(),
       (json['endingSaleDate'] as Timestamp).toDate(),
       (json['ticketPrice'] as num).toDouble(),
+      json['partnerId'] as String,
     );
   }
 
@@ -45,6 +51,7 @@ class TicketConcertModel {
       'openingSaleDate': openingSaleDate,
       'endingSaleDate': endingSaleDate,
       'ticketPrice': ticketPrice,
+      'partnerId': partnerId,
     };
   }
 }
@@ -78,7 +85,7 @@ class AllTicketConcertModel {
 }
 
 class BookingTicket {
-  String reserveticketId = "";
+  String id = "";
   String userId;
   String ticketId;
   String nicknameUser;
@@ -92,8 +99,13 @@ class BookingTicket {
   DateTime paymentTime;
   List<String>? sharedWith;
   String partnerId;
+  String userPhone;
+  String? tableNo;
+  String? roundtable;
+  bool? checkOut;
 
   BookingTicket({
+    this.id = "",
     required this.userId,
     required this.ticketId,
     required this.nicknameUser,
@@ -107,11 +119,16 @@ class BookingTicket {
     required this.partnerId,
     required this.paymentTime,
     required this.sharedWith,
+    required this.userPhone,
+    this.tableNo,
+    this.roundtable,
+    this.checkOut,
   });
 
   factory BookingTicket.fromJson(Map<String, dynamic> json) {
     print(json);
     return BookingTicket(
+      id: json['id'] as String,
       userId: json['userId'] as String,
       ticketId: json['ticketId'] as String,
       nicknameUser: json['nicknameUser'] as String,
@@ -129,6 +146,37 @@ class BookingTicket {
       sharedWith: json['sharedWith'] != null
           ? List<String>.from(json['sharedWith'] as List)
           : null,
+      userPhone: json['userPhone'] as String,
+      tableNo: json['tableNo'] as String? ?? "",
+      roundtable: json['roundtable'] as String? ?? "",
+      checkOut: json['checkOut'],
+    );
+  }
+  factory BookingTicket.fromSnapshot(DocumentSnapshot snapshot) {
+    var json = snapshot.data() as Map<String, dynamic>;
+    return BookingTicket(
+      id: snapshot.id, // Correctly assign the document ID
+      userId: json['userId'] as String,
+      ticketId: json['ticketId'] as String,
+      nicknameUser: json['nicknameUser'] as String,
+      eventName: json['eventName'] as String,
+      selectedTableLabel: json['selectedTableLabel'] as String,
+      eventDate: (json['eventDate'] as Timestamp).toDate(),
+      totalPayment:
+          (json['totalPayment'] as num).toDouble(), // Ensures double type
+      ticketQuantity: json['ticketQuantity'] as int,
+      payable: json['payable'] as bool,
+      checkIn: json['checkIn'] as bool,
+      partnerId: json['partnerId'] as String,
+      paymentTime: (json['eventDate'] as Timestamp).toDate(),
+
+      sharedWith: json['sharedWith'] != null
+          ? List<String>.from(json['sharedWith'] as List)
+          : null,
+      userPhone: json['userPhone'] as String,
+      tableNo: json['tableNo'] as String? ?? "",
+      roundtable: json['roundtable'] as String? ?? "",
+      checkOut: json['checkOut'],
     );
   }
 
@@ -147,34 +195,38 @@ class BookingTicket {
       'partnerId': partnerId,
       'paymentTime': paymentTime,
       'sharedWith': sharedWith,
+      'userPhone': userPhone,
     };
   }
 }
 
 class AllReservationTicketModel {
-  final List<BookingTicket> allReservationTicketModel;
+  final List<BookingTicket> reservetickets;
 
-  AllReservationTicketModel(this.allReservationTicketModel);
+  AllReservationTicketModel(this.reservetickets);
 
   factory AllReservationTicketModel.fromJson(List<dynamic> json) {
-    List<BookingTicket> allReservationTicketModel;
-
-    allReservationTicketModel =
+    List<BookingTicket> reservetickets =
         json.map((item) => BookingTicket.fromJson(item)).toList();
 
-    return AllReservationTicketModel(allReservationTicketModel);
+    return AllReservationTicketModel(reservetickets);
   }
 
   factory AllReservationTicketModel.fromSnapshot(QuerySnapshot qs) {
-    List<BookingTicket> allReservationTicketModel;
-
-    allReservationTicketModel = qs.docs.map((DocumentSnapshot ds) {
-      BookingTicket bookingticketmodel =
-          BookingTicket.fromJson(ds.data() as Map<String, dynamic>);
-      bookingticketmodel.reserveticketId = ds.id;
-      return bookingticketmodel;
+    List<BookingTicket> reservetickets = qs.docs.map((DocumentSnapshot ds) {
+      Map<String, dynamic> dataWithId = ds.data() as Map<String, dynamic>;
+      dataWithId['id'] = ds.id;
+      return BookingTicket.fromJson(dataWithId);
     }).toList();
-    return AllReservationTicketModel(allReservationTicketModel);
+    return AllReservationTicketModel(reservetickets);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'reservetickets': reservetickets
+          .map((reserveticket) => reserveticket.toJson())
+          .toList(),
+    };
   }
 }
 
@@ -183,8 +235,13 @@ class TicketcatalogProvider extends ChangeNotifier {
 
   List<TicketConcertModel> get allTicketConcert => _allTicketConcert;
 
-  void setReserveTicket(List<TicketConcertModel> tickets) {
-    _allTicketConcert = tickets;
+  void setReserveTicket(List<TicketConcertModel> tickets, String? partnerId) {
+    if (partnerId != null) {
+      _allTicketConcert =
+          tickets.where((ticket) => ticket.partnerId == partnerId).toList();
+    } else {
+      _allTicketConcert = tickets;
+    }
     notifyListeners();
   }
 
@@ -211,6 +268,7 @@ class ReservationTicketProvider extends ChangeNotifier {
   int _selectedTableSeats = 0;
   TableCatalog? _selectedTable;
   String? _selectedTableId;
+  int _totalSharedWithCount = 0;
 
   List<BookingTicket> get allReservationTicket => _allReservationTicket;
   List<TableCatalog> get tables => _tables;
@@ -223,6 +281,7 @@ class ReservationTicketProvider extends ChangeNotifier {
   int get selectedTableSeats => _selectedTableSeats;
   TableCatalog? get selectedTable => _selectedTable;
   String? get selectedTableId => _selectedTableId;
+  int get totalSharedWithCount => _totalSharedWithCount;
 
   void setAllReservationTicket(List<BookingTicket> reservationTickets) {
     _allReservationTicket = reservationTickets;
@@ -312,11 +371,91 @@ class ReservationTicketProvider extends ChangeNotifier {
 
   void clearBookingTable() {
     _allReservationTicket.clear();
+    _eventDate = null;
+    _selectedTableId = "";
+    _selectedTableLabel = "";
+    _selectedTablePrice = 0;
+    _ticketQuantity = 0;
+    _totalPrice = 0;
     notifyListeners();
   }
 
   bool isEventDate(DateTime date) {
     return _allReservationTicket
         .any((ticket) => ticket.eventDate.isAtSameMomentAs(date));
+  }
+
+  // for use in cart
+  void setTableNo(List<BookingTicket> reservationTickets) {
+    _allReservationTicket = reservationTickets;
+    _updateTotalSharedWithCount(); // Update shared count
+    notifyListeners();
+  }
+
+  void setTableNoForUser(String userId) {
+    var filteredList = _allReservationTicket
+        .where((ticket) => ticket.userId == userId)
+        .toList();
+    _allReservationTicket = filteredList;
+    _updateTotalSharedWithCount(); // Update shared count
+    notifyListeners();
+  }
+
+  void filterCheckedInToday(BuildContext context) {
+    DateTime now = DateTime.now();
+    String? selectedPartnerId =
+        Provider.of<SelectedPartnerProvider>(context, listen: false)
+            .selectedPartnerId;
+    String? currentUserId =
+        Provider.of<MemberUserModel>(context, listen: false).memberUser?.id;
+
+    if (selectedPartnerId == null) {
+      // Handle the case when there is no selected partner
+      _allReservationTicket = [];
+    } else {
+      var filteredList = _allReservationTicket.where((reservation) {
+        bool isUserShared =
+            reservation.sharedWith?.contains(currentUserId) ?? false;
+        bool checkOut =
+            reservation.checkOut ?? false; // Default to false if null
+        return reservation.checkIn &&
+            !checkOut && // Ensure checkOut is false
+            reservation.partnerId == selectedPartnerId &&
+            (reservation.eventDate
+                    .isAtSameMomentAs(DateTime(now.year, now.month, now.day)) ||
+                reservation.eventDate.isAfter(
+                    DateTime(now.year, now.month, now.day)
+                        .subtract(Duration(days: 1)))) &&
+            (reservation.userId == currentUserId || isUserShared);
+      }).toList();
+      _allReservationTicket = filteredList;
+    }
+    _updateTotalSharedWithCount(); // Update shared count
+    notifyListeners();
+  }
+
+  void _updateTotalSharedWithCount() {
+    _totalSharedWithCount = _allReservationTicket.fold(0, (sum, table) {
+      int count = table.sharedWith?.length ?? 0;
+      print('Table: ${table.id}, Shared With Count: $count'); // Added print
+      return sum + count;
+    });
+    print('Total Shared With Count: $_totalSharedWithCount'); // Added print
+  }
+
+  List<String> getAllSharedWith() {
+    Set<String> sharedWithSet = {};
+    for (var table in _allReservationTicket) {
+      if (table.sharedWith != null) {
+        sharedWithSet.addAll(table.sharedWith!);
+      }
+    }
+    return sharedWithSet.toList();
+  }
+
+  void clearAllReserveTable() {
+    _allReservationTicket = [];
+    _totalSharedWithCount = 0;
+    notifyListeners();
   }
 }

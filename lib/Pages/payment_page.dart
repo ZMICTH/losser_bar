@@ -25,7 +25,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late BillHistoryController billHistoryController;
   bool isLoading = true;
   List<OrderHistories> orders = [];
-  int? selectedPaymentMethod;
+  String? selectedPaymentMethod;
   Set<String> selectedOrders = Set();
   double totalPayment = 0.00;
   bool hasPendingOrder = false;
@@ -79,6 +79,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void selectAllOrders() {
     double total = 0.0;
     for (var order in orders) {
+      bool includeOrder = true;
       for (var item in order.orders) {
         if (item['delivered'] == null) {
           setState(() {
@@ -86,9 +87,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
           });
           return;
         }
+        if (item['delivered'] == false) {
+          includeOrder = false;
+          break;
+        }
       }
-      selectedOrders.add(order.id);
-      total += order.totalPrice;
+      if (includeOrder) {
+        selectedOrders.add(order.id);
+        total += order.totalPrice;
+      }
     }
     setState(() {
       totalPayment = total;
@@ -201,7 +208,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                     displayTotalPayment(),
-                    if (!hasPendingOrder) paymentMethodList(),
+                    if (!hasPendingOrder) paymentMethodDropdown(),
                     if (!hasPendingOrder) confirmPaymentMethodButton()
                   ],
                 );
@@ -226,28 +233,44 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget paymentMethodList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: paymentLabels.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Radio(
-            value: index,
-            groupValue: selectedPaymentMethod,
-            onChanged: (int? i) {
-              setState(() => selectedPaymentMethod = i);
+  Widget paymentMethodDropdown() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Please Select Payment Method:',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange[900]),
+          ),
+          DropdownButton<String>(
+            value: selectedPaymentMethod,
+            hint: Text('Select Payment Method'),
+            alignment: Alignment.center,
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+            items: paymentLabels.map((label) {
+              return DropdownMenuItem<String>(
+                alignment: Alignment.center,
+                value: label,
+                child: Text(label),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedPaymentMethod = value;
+              });
+              print(value);
             },
           ),
-          title: Text(paymentLabels[index],
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          // trailing: Icon(paymentIcons[index],
-          //     size: 35, color: Theme.of(context).colorScheme.primary),
-          onTap: () => setState(() => selectedPaymentMethod = index),
-        );
-      },
-      separatorBuilder: (context, index) => const Divider(),
+        ],
+      ),
     );
   }
 
@@ -260,14 +283,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
           textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        child: Text('Pay by ${paymentLabels[selectedPaymentMethod ?? 0]}',
+        child: Text('Pay by ${selectedPaymentMethod ?? 'Select Method'}',
             style: TextStyle(color: Colors.black87)),
       ),
     );
   }
 
   void _updatePaymentMethod(BuildContext context) async {
-    if (selectedOrders.isNotEmpty) {
+    if (selectedOrders.isNotEmpty && selectedPaymentMethod != null) {
       try {
         final Timestamp now = Timestamp.now();
 
@@ -277,7 +300,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               .doc(orderId)
               .update({
             'paymentMethodTime': now.toDate(),
-            'paymentMethod': paymentLabels[selectedPaymentMethod ?? 0],
+            'paymentMethod': selectedPaymentMethod,
           });
         });
 
@@ -288,7 +311,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => PaymentDetailScreen(
-              paymentMethod: paymentLabels[selectedPaymentMethod ?? 0],
+              paymentMethod: selectedPaymentMethod,
               selectedOrders: selectedOrders.toList(), // Pass selectedOrders
             ),
           ),

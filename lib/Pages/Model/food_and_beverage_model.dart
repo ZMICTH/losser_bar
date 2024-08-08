@@ -9,6 +9,7 @@ class FoodAndBeverageProduct {
   late String unit;
   String type;
   late int quantity;
+  String partnerId;
 
   FoodAndBeverageProduct(
     this.nameFoodBeverage,
@@ -18,6 +19,7 @@ class FoodAndBeverageProduct {
     this.unit,
     this.type,
     this.quantity,
+    this.partnerId,
   );
   factory FoodAndBeverageProduct.fromJson(Map<String, dynamic> json) {
     print("FoodAndBeverageProduct.fromJson");
@@ -30,6 +32,7 @@ class FoodAndBeverageProduct {
       json['unit'] as String,
       json['type'] as String,
       json['quantity'] as int,
+      json['partnerId'] as String,
     );
   }
 
@@ -43,6 +46,7 @@ class FoodAndBeverageProduct {
       'unit': unit,
       'type': type,
       'quantity': quantity,
+      'partnerId': partnerId,
     };
   }
 }

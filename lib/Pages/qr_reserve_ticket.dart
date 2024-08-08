@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 import 'package:losser_bar/Pages/controllers/reserve_ticket_controller.dart';
 import 'package:losser_bar/Pages/services/reserve_ticket_service.dart';
+import 'package:losser_bar/Pages/share_ticket.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -41,24 +42,20 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
       // Fetch all reservations created by the user
       List<BookingTicket> fetchedReservations =
           await ticketconcertcontroller.fetchReservationTicket();
-      List<BookingTicket> userReservations = fetchedReservations
-          .where((reservation) => reservation.userId == userId)
-          .toList();
 
-      // Fetch all reservations shared with the user
-      QuerySnapshot sharedReservationsSnapshot = await FirebaseFirestore
-          .instance
-          .collection('reservation_ticket')
-          .where('sharedWith', arrayContains: userId)
-          .get();
-      List<BookingTicket> sharedReservations = sharedReservationsSnapshot.docs
-          .map((doc) =>
-              BookingTicket.fromJson(doc.data() as Map<String, dynamic>))
+      // Filter reservations created by the user
+      // List<BookingTicket> userReservations = fetchedReservations
+      //     .where((reservation) => reservation.userId == userId)
+      //     .toList();
+
+      // Filter reservations where sharedWith contains the userId
+      List<BookingTicket> sharedReservations = fetchedReservations
+          .where((reservation) => reservation.sharedWith!.contains(userId))
           .toList();
 
       // Combine both sets of reservations
       List<BookingTicket> allReservations = [
-        ...userReservations,
+        // ...userReservations,
         ...sharedReservations,
       ];
 
@@ -86,13 +83,14 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-        title: Text("QR Reservation Tickets"),
+        titleTextStyle:
+            const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        title: const Text("QR Reservation Tickets"),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : reservations == null || reservations.isEmpty
-              ? Center(child: Text('No reservations made.'))
+              ? const Center(child: Text('No reservations made.'))
               : ListView.builder(
                   itemCount: reservations.length,
                   itemBuilder: (context, index) {
@@ -112,7 +110,7 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
                           _showExpiredDialog(context);
                         } else {
                           Map<String, dynamic> reservationDetails = {
-                            'id': bookingTicket.reserveticketId,
+                            'id': bookingTicket.id,
                             // 'userId': bookingTicket.userId,
                             // 'name': bookingTicket.nicknameUser,
                             // 'eventName': bookingTicket.eventName,
@@ -136,23 +134,24 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
                                 reservationDetailsString:
                                     reservationDetailsString,
                                 reservationDay: bookingTicket.eventDate,
-                                reservationId: bookingTicket.reserveticketId,
+                                reservationId: bookingTicket.id,
                                 ticketQuantity: bookingTicket.ticketQuantity,
+                                sharedWithIds: bookingTicket.sharedWith,
                               ),
                             ),
                           );
                         }
                       },
                       child: Card(
-                        margin: EdgeInsets.all(8.0),
+                        margin: const EdgeInsets.all(8.0),
                         child: ListTile(
-                          leading: Icon(
+                          leading: const Icon(
                             Icons.event_seat,
                             color: Colors.black,
                           ),
                           title: Text(
                             '${bookingTicket.eventName} - ${bookingTicket.selectedTableLabel}',
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black),
@@ -160,13 +159,13 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
                           subtitle: bookingTicket.userId !=
                                   FirebaseAuth.instance.currentUser?.uid
                               ? Text('Share from ${bookingTicket.nicknameUser}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.black54,
                                   ))
                               : null,
                           trailing: Text(
                             formattedDate,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -184,17 +183,18 @@ class _QrReservationTicketsState extends State<QrReservationTickets> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
+        title: const Text(
           'QR Code Expired',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        content: Text('The QR code has expired. Please request a new one.'),
+        content:
+            const Text('The QR code has expired. Please request a new one.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -207,6 +207,7 @@ class QRCodeDisplayPage extends StatefulWidget {
   final DateTime reservationDay;
   final String reservationId;
   final int ticketQuantity;
+  final List<String>? sharedWithIds;
 
   QRCodeDisplayPage({
     Key? key,
@@ -214,6 +215,7 @@ class QRCodeDisplayPage extends StatefulWidget {
     required this.reservationDay,
     required this.reservationId,
     required this.ticketQuantity,
+    required this.sharedWithIds,
   }) : super(key: key);
 
   @override
@@ -236,7 +238,6 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
   @override
   void initState() {
     super.initState();
-    _loadSharedCount();
   }
 
   @override
@@ -244,7 +245,7 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     super.didChangeDependencies();
     if (!_isDependenciesInitialized) {
       _calculateTimeLeft();
-      _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         _calculateTimeLeft();
       });
       _isDependenciesInitialized = true;
@@ -285,135 +286,87 @@ class _QRCodeDisplayPageState extends State<QRCodeDisplayPage> {
     super.dispose();
   }
 
-  Future<void> _showShareDialog() async {
-    final TextEditingController userIdController = TextEditingController();
-    bool isValid = true;
-
-    await showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Share QR Code'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: userIdController,
-                decoration: InputDecoration(
-                  labelText: 'Enter friend\'s user ID',
-                  labelStyle: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              if (!isValid)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    'Cannot share more than ${widget.ticketQuantity - 1} times',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (sharedCount < widget.ticketQuantity - 1) {
-                  setState(() {
-                    sharedCount++;
-                  });
-
-                  // Save friend's user ID and increment shared count in Firebase
-                  await FirebaseFirestore.instance
-                      .collection('reservation_ticket')
-                      .doc(widget.reservationId)
-                      .update({
-                    'sharedCount': FieldValue.increment(1),
-                    'sharedWith':
-                        FieldValue.arrayUnion([userIdController.text]),
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('QR code shared successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  Navigator.of(context).pop();
-                } else {
-                  setState(() {
-                    isValid = false;
-                  });
-                }
-              },
-              child: Text('Share'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-        title: Text('QR Code Display'),
+        titleTextStyle:
+            const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+        title: const Text('QR Code Display'),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '1. Doors open at 5:00 PM onwards.\n'
-                '2. Please present your QR-Code booking number to the staff on the day and time of the event.\n'
-                '3. We reserve the right to change any terms and conditions without prior notice.\n'
-                '4. Tickets are non-transferable.\n'
-                '5. Please bring your ID card along with your booking number. Entry will be denied without ID verification.',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20),
-              QrImageView(
-                data: widget.reservationDetailsString,
-                version: QrVersions.auto,
-                size: 200.0,
-              ),
-              SizedBox(height: 20),
-              Text(_timeLeft != null
-                  ? 'Expires in: ${formatDuration(_timeLeft!)}'
-                  : 'QR Code Expired'),
-              SizedBox(
-                height: 20,
-              ),
-              TextButton(
-                onPressed: () {
-                  _showShareDialog();
-                },
-                child: Text(
-                  'Share QR',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '1. Doors open at 5:00 PM onwards.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.start,
                   ),
+                  Text(
+                    '2. Please present your QR-Code booking number to the staff on the day and time of the event.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.start,
+                  ),
+                  Text(
+                    '3. We reserve the right to change any terms and conditions without prior notice.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.start,
+                  ),
+                  Text(
+                    '4. Tickets are non-transferable.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.start,
+                  ),
+                  Text(
+                    '5. Please bring your ID card along with your booking number. Entry will be denied without ID verification.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.start,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            QrImageView(
+              data: widget.reservationDetailsString,
+              version: QrVersions.auto,
+              size: 200.0,
+            ),
+            const SizedBox(height: 20),
+            Text(_timeLeft != null
+                ? 'Expires in: ${formatDuration(_timeLeft!)}'
+                : 'QR Code Expired'),
+            const SizedBox(
+              height: 20,
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ShareQrTicketPage(
+                      reservationId: widget.reservationId,
+                      ticketQuantity: widget.ticketQuantity,
+                      sharedWithIds: widget.sharedWithIds,
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                'Share QR',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

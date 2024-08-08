@@ -3,7 +3,6 @@ import 'package:losser_bar/Pages/Model/reserve_ticket_model.dart';
 
 abstract class TicketConcertService {
   Future<List<TicketConcertModel>> getAllTicketConcertModel();
-
   addReserveTicket(BookingTicket BookingTicketConcert) {}
 
   Future<List<BookingTicket>> getAllReservationTicket();
@@ -40,6 +39,7 @@ class TicketConcertFirebaseService implements TicketConcertService {
         'paymentTime': BookingTicketConcert.paymentTime,
         'sharedWith': BookingTicketConcert.sharedWith,
         'partnerId': BookingTicketConcert.partnerId,
+        'userPhone': BookingTicketConcert.userPhone,
       });
       print(BookingTicketConcert.toJson());
       print("Reservation uploaded successfully");
@@ -56,7 +56,7 @@ class TicketConcertFirebaseService implements TicketConcertService {
     print("ReservationTicket count: ${qs.docs.length}");
     AllReservationTicketModel allReservationTicketModel =
         AllReservationTicketModel.fromSnapshot(qs);
-    print(allReservationTicketModel.allReservationTicketModel);
-    return allReservationTicketModel.allReservationTicketModel;
+
+    return allReservationTicketModel.reservetickets;
   }
 }

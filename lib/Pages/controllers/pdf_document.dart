@@ -16,8 +16,6 @@ class PdfGenerator {
 
   Future<void> generatePdf() async {
     final image = await _loadImage('images/logo.png');
-    String formattedPaymentTime =
-        DateFormat('yyyy-MM-dd – kk:mm').format(order.paymentTime);
 
     pdf.addPage(
       pw.Page(
@@ -51,14 +49,10 @@ class PdfGenerator {
 
   pw.Widget _buildDivider() {
     return pw.Container(
-        margin: pw.EdgeInsets.symmetric(
-            vertical: 5), // Optional: adjust spacing before and after the line
+        margin: pw.EdgeInsets.symmetric(vertical: 5),
         decoration: pw.BoxDecoration(
             border: pw.Border(
-                bottom: pw.BorderSide(
-                    width: 1,
-                    color: PdfColors
-                        .grey800)))); // Adjust color and width as needed
+                bottom: pw.BorderSide(width: 1, color: PdfColors.grey800))));
   }
 
   pw.Widget _buildHeader(pw.ImageProvider image) {
@@ -80,8 +74,6 @@ class PdfGenerator {
               pw.Text('Chaingmai, Thailand', style: pw.TextStyle(fontSize: 14)),
             ],
           ),
-
-          // Use the image here
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
@@ -99,6 +91,12 @@ class PdfGenerator {
   }
 
   pw.Widget _buildTitle() {
+    final paymentTime =
+        order.paymentsBy.isNotEmpty ? order.paymentsBy[0]['paymentTime'] : null;
+    final formattedPaymentTime = paymentTime != null
+        ? DateFormat('yyyy-MM-dd – kk:mm').format(paymentTime)
+        : 'N/A';
+
     return pw.Padding(
       padding: pw.EdgeInsets.all(8),
       child: pw.Column(
@@ -110,15 +108,15 @@ class PdfGenerator {
             style: pw.TextStyle(fontSize: 12),
           ),
           pw.Text(
-            'Payment by: ${order.paidName}',
+            'Round No: ${order.roundtable}',
             style: pw.TextStyle(fontSize: 12),
           ),
           pw.Text('Payment Method: ${order.paymentMethod}',
               style: pw.TextStyle(fontSize: 12)),
-          pw.Text(
-            'Payment Time: ${order.paymentTime}',
-            style: pw.TextStyle(fontSize: 12),
-          ),
+          // pw.Text(
+          //   'Payment Time: $formattedPaymentTime',
+          //   style: pw.TextStyle(fontSize: 12),
+          // ),
           pw.SizedBox(height: 20),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -144,9 +142,8 @@ class PdfGenerator {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: order.orders.map((item) {
-        // Calculate total price for each item
-        final double price = double.tryParse(item['price'].toString()) ?? 0.0;
-        final int quantity = int.tryParse(item['quantity'].toString()) ?? 0;
+        final double price = (item['price'] as num?)?.toDouble() ?? 0.0;
+        final double quantity = (item['quantity'] as num?)?.toDouble() ?? 0.0;
         final double totalPrice = price * quantity;
 
         return pw.Padding(

@@ -405,6 +405,9 @@ class ReserveTableProvider extends ChangeNotifier {
 
   void clearBookingTable() {
     _allReserveTable.clear();
+    selectedDate = null;
+    selectedTableId = "";
+    _seatQuantity = 0;
     notifyListeners();
   }
 
@@ -427,7 +430,10 @@ class ReserveTableProvider extends ChangeNotifier {
   }
 
   void clearbookingtable() {
-    allReserveTable.clear();
+    _allReserveTable.clear();
+    selectedDate = null;
+    selectedTableId = "";
+    _seatQuantity = 0;
     notifyListeners();
   }
 

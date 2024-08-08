@@ -77,10 +77,18 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
   Future<void> _loadTicketCatalogs() async {
     setState(() => isLoading = true); // Ensure loading state is true
     try {
+      // Get the selected partner ID from the provider
+      String? partnerId =
+          Provider.of<SelectedPartnerProvider>(context, listen: false)
+              .selectedPartnerId;
+
+      if (partnerId == null) {
+        throw Exception('Partner ID is not selected');
+      }
       var tickets = await ticketconcertcontroller.fetchTicketConcertModel();
       Provider.of<TicketcatalogProvider>(context, listen: false)
-          .setReserveTicket(
-              tickets); // Adjust this based on your actual implementation
+          .setReserveTicket(tickets,
+              partnerId); // Adjust this based on your actual implementation
     } catch (e) {
       print('Error fetching TicketCatalog: $e');
     } finally {
@@ -96,33 +104,53 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
   }
 
   void _checkForEvent(DateTime date) {
+    print("Checking for events on: $date");
     final ticketProvider =
         Provider.of<TicketcatalogProvider>(context, listen: false);
-    final eventsOnDate = ticketProvider.allTicketConcert
-        .where((ticket) => ticket.eventDate.isAtSameMomentAs(date))
-        .toList();
-    print(eventsOnDate);
+
+    final eventsOnDate = ticketProvider.allTicketConcert.where((ticket) {
+      final eventDate = ticket.eventDate;
+      return eventDate.year == date.year &&
+          eventDate.month == date.month &&
+          eventDate.day == date.day;
+    }).toList();
+
+    print("Events on date: ${eventsOnDate.first.eventDate}");
 
     if (eventsOnDate.isNotEmpty) {
-      _showEventAlertDialog();
+      _showEventAlertDialog(eventsOnDate);
     }
   }
 
-  void _showEventAlertDialog() {
+  void _showEventAlertDialog(List<TicketConcertModel> eventsOnDate) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Concert Ticket Sale'),
-          content: Text('There is a concert ticket sale on this day.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+        return WillPopScope(
+          onWillPop: () async {
+            // Prevent dialog from being dismissed by the back button
+            return false;
+          },
+          child: AlertDialog(
+            title: Text(
+              'Concert Ticket Sale',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-          ],
+            content: Text(
+                '${eventsOnDate.first.eventName} concert ticket sale on this day.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  'OK',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -257,7 +285,8 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text('${labelMap['label']}'),
+                              Text(
+                                  '${labelMap['label']} (${labelMap['seats']} seats)'),
                               Text(
                                   'Price: ${numberFormat.format(labelMap['tablePrices'])} THB'),
                               Text(
@@ -323,7 +352,7 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
               ),
               SizedBox(height: 10),
               Text(
-                'Total Price: THB ${numberFormat.format(selectedTablePrice! * quantity)}',
+                'Total Price: ${numberFormat.format(selectedTablePrice! * quantity)} THB',
                 style: TextStyle(color: Colors.black, fontSize: 22),
               ),
               Padding(
@@ -481,7 +510,10 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                   );
 
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Reservation successful'),
+                    content: Text(
+                      'Reservation successful',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     backgroundColor: Colors.green,
                   ));
 
@@ -494,7 +526,10 @@ class _ReserveTablePageState extends State<ReserveTablePage> {
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to reserve table: $e'),
+                      content: Text(
+                        'Failed to reserve table: $e',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );

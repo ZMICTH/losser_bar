@@ -43,7 +43,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       // Directly set the fetched order histories for the current user in the provider
       Provider.of<OrderHistoryProvider>(context, listen: false)
           .setAllOrderHistories(fetchOrdersHistory
-              .where((receipts) => receipts.userIdPaid == userId)
+              .where((receipts) => receipts.userId == userId)
               .toList());
     } catch (e) {
       print("Error fetching order history: $e");
@@ -60,6 +60,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   Widget build(BuildContext context) {
     final orderHistoryProvider = Provider.of<OrderHistoryProvider>(context);
     List<PayOrder>? ordersHistory = orderHistoryProvider.allOrderHistory;
+    // Create a NumberFormat instance for formatting
+    final numberFormat = NumberFormat("#,##0", "en_US");
 
     return Scaffold(
       appBar: AppBar(
@@ -88,7 +90,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                             const TextStyle(color: Colors.black, fontSize: 18),
                       ),
                       subtitle: Text(
-                        'Table No: ${order.tableNo}\nTotal Price: ${order.totalPrice.toStringAsFixed(2)}',
+                        'Table No: ${order.tableNo}\nTotal Price: ${numberFormat.format(order.totalPrice)} THB',
                         style: const TextStyle(color: Colors.black),
                       ),
                       isThreeLine: true,

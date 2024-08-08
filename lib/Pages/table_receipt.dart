@@ -53,6 +53,8 @@ class _TableReceiptPageState extends State<TableReceiptPage> {
     final reserveTableProvider = Provider.of<ReserveTableProvider>(context);
     List<ReserveTableHistory>? reservations =
         reserveTableProvider.allReserveTable;
+    // Create a NumberFormat instance for formatting
+    final numberFormat = NumberFormat("#,##0", "en_US");
 
     return Scaffold(
       appBar: AppBar(
@@ -83,7 +85,7 @@ class _TableReceiptPageState extends State<TableReceiptPage> {
                             fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        'Selected Table: ${tables.selectedTableLabel}\nTotal Price: ${tables.totalPrices.toStringAsFixed(2)}',
+                        'Selected Table: ${tables.selectedTableLabel}\nTotal Price: ${numberFormat.format(tables.totalPrices)} THB',
                         style: const TextStyle(color: Colors.black),
                       ),
                       isThreeLine: true,
